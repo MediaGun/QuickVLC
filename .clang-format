@@ -1,0 +1,32 @@
+---
+BasedOnStyle: Google
+IndentWidth: 4
+
+---
+Language: Cpp
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: None
+AllowShortLoopsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Empty
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: true
+BreakAfterJavaFieldAnnotations: true
+ColumnLimit: 120
+Cpp11BracedListStyle: false
+DerivePointerAlignment: false
+IndentCaseLabels: false
+JavaScriptQuotes: Single
+PointerAlignment: Right
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCpp11BracedList: true
+SpacesInContainerLiterals: false
+PenaltyBreakFirstLessLess: 160
+TabWidth: 4
+...
