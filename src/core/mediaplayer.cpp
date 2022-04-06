@@ -1,21 +1,21 @@
 /******************************************************************************
-* This file is part of QuickVLC - Qt and libvlc connection library.
-* Copyright (C) 2016 Tadej Novak <tadej@tano.si>, 
-*               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
-*
-* QuickVLC is free software: you can redistribute it and/or modify it 
-* under the terms of the GNU General Public License as published 
-* by the Free Software Foundation, either version 3 of the License, 
-* or (at your option) any later version.
-*
-* QuickVLC is distributed in the hope that it will be useful, 
-* but WITHOUT ANY WARRANTY; without even the implied warranty 
-* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-* See the GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License 
-* along with QuickVLC. If not, see <https://www.gnu.org/licenses/>.
-******************************************************************************/
+ * This file is part of QuickVLC - Qt and libvlc connection library.
+ * Copyright (C) 2016 Tadej Novak <tadej@tano.si>,
+ *               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
+ *
+ * QuickVLC is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * QuickVLC is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QuickVLC. If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
 
 #include "mediaplayer.h"
 
@@ -174,6 +174,14 @@ void MediaPlayer::play()
     if (!m_vlcMediaPlayer) {
         return;
     }
+
+    //#if defined(Q_OS_WIN32)
+    //    libvlc_media_player_set_hwnd(_vlcMediaPlayer, (void *)_currentWId);
+    //#elif defined(Q_OS_DARWIN)
+    //    libvlc_media_player_set_nsobject(_vlcMediaPlayer, (void *)_currentWId);
+    //#elif defined(Q_OS_UNIX)
+    //    libvlc_media_player_set_xwindow(m_vlcMediaPlayer, 0);
+    //#endif
 
     libvlc_media_player_play(m_vlcMediaPlayer);
 
