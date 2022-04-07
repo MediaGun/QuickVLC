@@ -169,6 +169,13 @@ void MediaPlayer::setPosition(float pos)
     Error::printErrorMsg();
 }
 
+void MediaPlayer::setPlaybackRate(float rate)
+{
+    libvlc_media_player_set_rate(m_vlcMediaPlayer, rate);
+
+    Error::printErrorMsg();
+}
+
 void MediaPlayer::play()
 {
     if (!m_vlcMediaPlayer) {
