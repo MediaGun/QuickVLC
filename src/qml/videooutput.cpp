@@ -111,6 +111,8 @@ void VideoOutput::setCropRatio(int cropRatio)
 
 void VideoOutput::presentFrame(const std::shared_ptr<const Vlc::VideoFrame> &frame)
 {
+    Q_UNUSED(frame)
+
     //    m_frame = frame;
 
     //    m_frameUpdated = true;

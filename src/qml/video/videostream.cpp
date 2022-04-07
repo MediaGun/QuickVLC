@@ -18,8 +18,6 @@
 
 #include "videostream.h"
 
-#include <functional>
-
 #include "core/mediaplayer.h"
 #include "videooutput.h"
 
@@ -80,6 +78,7 @@ void VideoStream::frameUpdated()
 
     auto *fbo = getFbo();
 
-    std::for_each(
-        m_attachedOutputs.begin(), m_attachedOutputs.end(), std::bind2nd(std::mem_fun(&VideoOutput::presentFbo), fbo));
+    for (auto *output : m_attachedOutputs) {
+        output->presentFbo(fbo);
+    }
 }

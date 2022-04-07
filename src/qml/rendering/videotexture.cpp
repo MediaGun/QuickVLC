@@ -20,7 +20,7 @@
 
 VideoTexture::VideoTexture()
 {
-    auto *ni = nativeInterface<QNativeInterface::QSGOpenGLTexture>();
+    //    auto *ni = nativeInterface<QNativeInterface::QSGOpenGLTexture>();
 }
 
 // void VideoTexture::setStream(VideoStream *videoStream)

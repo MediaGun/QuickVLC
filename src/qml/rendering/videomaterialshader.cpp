@@ -35,6 +35,9 @@ VideoMaterialShader::~VideoMaterialShader()
 
 bool VideoMaterialShader::updateUniformData(RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial)
 {
+    Q_UNUSED(newMaterial)
+    Q_UNUSED(oldMaterial)
+
     bool changed = false;
     QByteArray *buf = state.uniformData();
 
@@ -50,6 +53,8 @@ bool VideoMaterialShader::updateUniformData(RenderState &state, QSGMaterial *new
 void VideoMaterialShader::updateSampledImage(
     RenderState &state, int binding, QSGTexture **texture, QSGMaterial *newMaterial, QSGMaterial *oldMaterial)
 {
+    Q_UNUSED(state)
+
     Q_ASSERT(oldMaterial == nullptr || newMaterial->type() == oldMaterial->type());
 
     VideoMaterial *mat = static_cast<VideoMaterial *>(newMaterial);

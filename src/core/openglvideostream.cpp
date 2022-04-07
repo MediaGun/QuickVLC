@@ -117,6 +117,7 @@ bool OpenGLVideoStream::resize(const libvlc_video_render_cfg_t *cfg, libvlc_vide
 bool OpenGLVideoStream::setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out)
 {
     Q_UNUSED(cfg)
+    Q_UNUSED(out)
 
     if (!QOpenGLContext::supportsThreadedOpenGL()) {
         return false;
