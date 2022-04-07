@@ -18,7 +18,7 @@
 
 #include "videostream.h"
 
-#include <algorithm>
+#include <functional>
 
 #include "core/mediaplayer.h"
 #include "videooutput.h"
