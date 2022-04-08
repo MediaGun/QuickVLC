@@ -33,3 +33,6 @@ find_package(Qt6 COMPONENTS Test REQUIRED)
 find_package(Qt6 COMPONENTS ShaderTools REQUIRED)
 find_package(Qt6 COMPONENTS OpenGL REQUIRED)
 find_package(LIBVLC REQUIRED)
+
+
+SET(QT_INSTALL_QML ${CMAKE_INSTALL_PREFIX}/qml)

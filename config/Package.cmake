@@ -88,7 +88,7 @@ export(EXPORT QuickVLCQmlTargets
 )
 
 configure_file(config/package/QuickVLCQmlConfig.cmake
-    "${CMAKE_BINARY_DIR}/package/QuickVLCQmlQuickVLCQmlConfig.cmake"
+    "${CMAKE_BINARY_DIR}/package/QuickVLCQml/QuickVLCQmlConfig.cmake"
 )
 
 set(QuickVLCQmlConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/cmake/QuickVLCQml)
