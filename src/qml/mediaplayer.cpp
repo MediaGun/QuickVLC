@@ -106,11 +106,7 @@ void MediaPlayer::setSource(const QUrl &url)
         m_media = new Vlc::Media(url.toString(QUrl::FullyEncoded), false, m_instance);
     }
 
-    if (m_autoplay) {
-        m_player->open(m_media);
-    } else {
-        m_player->openOnly(m_media);
-    }
+    open();
 
     emit sourceChanged();
 }
@@ -138,4 +134,13 @@ bool MediaPlayer::seekable() const
 int MediaPlayer::state() const
 {
     return m_player->state();
+}
+
+void MediaPlayer::open()
+{
+    if (m_autoplay) {
+        m_player->open(m_media);
+    } else {
+        m_player->openOnly(m_media);
+    }
 }

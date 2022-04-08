@@ -83,6 +83,8 @@ signals:
     void playbackStateChanged();
 
 private:
+    void open();
+
     Vlc::Instance *m_instance;
     Vlc::Media *m_media;
     Vlc::MediaPlayer *m_player;
