@@ -106,6 +106,10 @@ set_target_properties(${QUICKVLC_QML}plugin PROPERTIES
     SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
 )
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    SET_TARGET_PROPERTIES(${QUICKVLC_QML}plugin PROPERTIES INSTALL_RPATH "@loader_path/../../lib")
+ENDIF()
+
 target_compile_definitions(${QUICKVLC_QML} PRIVATE QUICKVLC_QML_LIBRARY)
 
 # Additional macros
