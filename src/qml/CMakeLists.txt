@@ -114,8 +114,14 @@ target_compile_definitions(${QUICKVLC_QML} PRIVATE QUICKVLC_QML_LIBRARY)
 generate_pkgconfig(${QUICKVLC_QML_NAME} qml)
 generate_windows_rc(${QUICKVLC_QML_NAME} qml QUICKVLC_SOURCES)
 
-set(QuickVLCQmlIncludesLocation ${CMAKE_INSTALL_INCLUDEDIR})
-set(QuickVLCQmlPublicHeaderLocation ${CMAKE_INSTALL_INCLUDEDIR}/${QUICKVLC_QML_NAME})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(QuickVLCQmlIncludesLocation ${CMAKE_INSTALL_LIBDIR}/${QUICKVLC_QML_NAME}.framework)
+    set(QuickVLCQmlPublicHeaderLocation ${CMAKE_INSTALL_LIBDIR}/${QUICKVLC_QML_NAME}.framework)
+else()
+    set(QuickVLCQmlIncludesLocation ${CMAKE_INSTALL_INCLUDEDIR})
+    set(QuickVLCQmlPublicHeaderLocation ${CMAKE_INSTALL_INCLUDEDIR}/${QUICKVLC_QML_NAME})
+endif()
+
 
 install(TARGETS ${QUICKVLC_QML} EXPORT QuickVLCQmlTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

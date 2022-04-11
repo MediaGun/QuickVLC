@@ -78,8 +78,14 @@ target_compile_definitions(${QUICKVLC_CORE} PRIVATE QUICKVLC_CORE_LIBRARY)
 generate_pkgconfig(${QUICKVLC_CORE_NAME} core)
 generate_windows_rc(${QUICKVLC_CORE_NAME} core QUICKVLC_CORE_SOURCES)
 
-set(QuickVLCCoreIncludesLocation ${CMAKE_INSTALL_INCLUDEDIR})
-set(QuickVLCCorePublicHeaderLocation ${CMAKE_INSTALL_INCLUDEDIR}/${QUICKVLC_CORE_NAME})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(QuickVLCCoreIncludesLocation ${CMAKE_INSTALL_LIBDIR}/${QUICKVLC_CORE_NAME}.framework)
+    set(QuickVLCCorePublicHeaderLocation ${CMAKE_INSTALL_LIBDIR}/${QUICKVLC_CORE_NAME}.framework)
+else()
+    set(QuickVLCCoreIncludesLocation ${CMAKE_INSTALL_INCLUDEDIR})
+    set(QuickVLCCorePublicHeaderLocation ${CMAKE_INSTALL_INCLUDEDIR}/${QUICKVLC_CORE_NAME})
+endif()
+
 
 install(TARGETS ${QUICKVLC_CORE} EXPORT QuickVLCCoreTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
