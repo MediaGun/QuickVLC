@@ -23,7 +23,7 @@
 file(READ VERSION QUICKVLC_VERSION)
 string(REGEX REPLACE "\n" "" QUICKVLC_VERSION "${QUICKVLC_VERSION}")
 
-message(STATUS "Building Mediagun ${QUICKVLC_VERSION}")
+message(STATUS "Building version ${QUICKVLC_VERSION}")
 
 # Check Git revision
 find_program(GIT git)
