@@ -89,7 +89,7 @@ protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
 
 private:
-    FillRect calculateFillMode(uint16_t fw, uint16_t fh);
+    FillRect calculateFillMode(quint16 fw, quint16 fh);
 
     QPointer<MediaSource> m_source;
 
