@@ -178,7 +178,7 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
     return node;
 }
 
-FillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
+FrameFillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
 {
     QRectF srcRect(0, 1.0, 1.0, -1.0);
     QRectF outRect(0, 0, width(), height());
@@ -235,5 +235,5 @@ FillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
         }
     }
 
-    return FillRect { srcRect, outRect };
+    return FrameFillRect { srcRect, outRect };
 }

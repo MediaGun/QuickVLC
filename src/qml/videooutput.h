@@ -30,7 +30,7 @@
 #include "mediasource.h"
 #include "qml_shared_export.h"
 
-struct FillRect {
+struct FrameFillRect {
     QRectF source;
     QRectF out;
 };
@@ -89,7 +89,7 @@ protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
 
 private:
-    FillRect calculateFillMode(quint16 fw, quint16 fh);
+    FrameFillRect calculateFillMode(quint16 fw, quint16 fh);
 
     QPointer<MediaSource> m_source;
 
