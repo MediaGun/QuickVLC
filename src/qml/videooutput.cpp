@@ -20,8 +20,7 @@
 
 #include "rendering/videonode.h"
 
-VideoOutput::VideoOutput()
-    : m_source { nullptr }, m_fillMode { Vlc::Enum::PreserveAspectFit }, m_frameUpdated { false }, m_fbo { nullptr }
+VideoOutput::VideoOutput() : m_source { nullptr }, m_fillMode { Vlc::Enum::PreserveAspectFit }, m_frameUpdated { false }
 {
     setFlag(QQuickItem::ItemHasContents, true);
 }
@@ -109,20 +108,9 @@ void VideoOutput::setCropRatio(int cropRatio)
     emit cropRatioChanged();
 }
 
-void VideoOutput::presentFrame(const std::shared_ptr<const Vlc::VideoFrame> &frame)
+void VideoOutput::presentFrame(const std::shared_ptr<Vlc::VideoFrame> &frame)
 {
-    Q_UNUSED(frame)
-
-    //    m_frame = frame;
-
-    //    m_frameUpdated = true;
-
-    update();
-}
-
-void VideoOutput::presentFbo(QOpenGLFramebufferObject *fbo)
-{
-    m_fbo = fbo;
+    m_frame = frame;
 
     m_frameUpdated = true;
 
@@ -133,23 +121,9 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 {
     Q_UNUSED(data);
 
-    //    if (!m_frameUpdated) {
-    //        return nullptr;
-    //    }
-
-    //    if (!m_source) {
-    //        return nullptr;
-    //    }
-
-    //    auto *fbo = m_source->getFrame();
-
-    //    if (!fbo) {
-    //        return nullptr;
-    //    }
-
     VideoNode *node = static_cast<VideoNode *>(oldNode);
 
-    if (!m_fbo) {
+    if (!m_frame) {
         delete node;
 
         return nullptr;
@@ -162,16 +136,10 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
     if (m_frameUpdated) {
         m_frameUpdated = false;
 
-        auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(m_fbo->takeTexture(), window(), m_fbo->size());
-
-        std::shared_ptr<QSGTexture> tex;
-
-        tex.reset(texture);
-
-        node->setTexture(tex);
+        node->updateFrame(m_frame);
     }
 
-    auto rects = calculateFillMode(m_fbo->width(), m_fbo->height());
+    auto rects = calculateFillMode(m_frame->width(), m_frame->height());
 
     node->setRect(rects.out, rects.source);
 
@@ -184,9 +152,6 @@ FrameFillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
     QRectF outRect(0, 0, width(), height());
 
     if (fillMode() != Vlc::Enum::Stretch) {
-        //        const uint16_t fw = 300;  // FIXME _frame->width;
-        //        const uint16_t fh = 300;  // FIXME _frame->height;
-
         qreal frameAspectTmp = qreal(fw) / fh;
         QSizeF aspectRatioSize = Vlc::Enum::ratioSize(m_aspectRatio);
 

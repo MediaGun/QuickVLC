@@ -19,7 +19,6 @@
 #pragma once
 
 #include <QOpenGLContext>
-#include <QOpenGLFramebufferObject>
 #include <QPointer>
 #include <QQuickItem>
 #include <QQuickWindow>
@@ -68,9 +67,7 @@ public:
 
     void setCropRatio(int cropRatio);
 
-    void presentFrame(const std::shared_ptr<const Vlc::VideoFrame> &frame);
-
-    void presentFbo(QOpenGLFramebufferObject *fbo);
+    void presentFrame(const std::shared_ptr<Vlc::VideoFrame> &frame);
 
 signals:
     void contextReady(QOpenGLContext *ctx);
@@ -97,7 +94,6 @@ private:
     Vlc::Enum::Ratio m_aspectRatio;
     Vlc::Enum::Ratio m_cropRatio;
 
-    std::shared_ptr<const Vlc::AbstractVideoFrame> m_frame;
+    std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;
     bool m_frameUpdated;
-    QOpenGLFramebufferObject *m_fbo;
 };

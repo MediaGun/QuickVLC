@@ -59,26 +59,12 @@ void VideoStream::deregisterVideoOutput(VideoOutput *output)
 
 void VideoStream::frameUpdated()
 {
-    //    auto frame = getVideoFrame();
-
     //    std::shared_ptr<const Vlc::VideoFrame> frame = std::dynamic_pointer_cast<const
     //    Vlc::VideoFrame>(getVideoFrame());
 
-    //    if (!frame) {
-    //        return;
-    //    }
-
-    //    for (auto *output : m_attachedOutputs) {
-    //        QMetaObject::invokeMethod(output, &VideoOutput::presentFrame, Qt::QueuedConnection, QGenericArgument {},
-    //            Q_ARG(std::shared_ptr<Vlc::VideoFrame>, frame));
-    //    }
-
-    //    std::for_each(m_attachedOutputs.begin(), m_attachedOutputs.end(),
-    //        std::bind2nd(std::mem_fun(&VideoOutput::presentFrame), frame));
-
-    auto *fbo = getFbo();
+    auto frame = getVideoFrame();
 
     for (auto *output : m_attachedOutputs) {
-        output->presentFbo(fbo);
+        output->presentFrame(frame);
     }
 }
