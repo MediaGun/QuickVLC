@@ -67,31 +67,12 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
     if (m_updated) {
         std::swap(m_idx_swap, m_idx_display);
 
-        //        m_videoFrame.reset();
-
-        //        m_frame = new VideoFrame(m_buffers[m_idx_display].get());
-
         m_videoFrame = std::make_shared<VideoFrame>(m_buffers[m_idx_display].get());
 
         m_updated = false;
     }
 
     return m_videoFrame;
-
-    //    return m_buffers[m_idx_display].get();
-}
-
-QOpenGLFramebufferObject *OpenGLVideoStream::getFbo()
-{
-    QMutexLocker locker(&m_text_lock);
-
-    if (m_updated) {
-        std::swap(m_idx_swap, m_idx_display);
-
-        m_updated = false;
-    }
-
-    return m_buffers[m_idx_display].get();
 }
 
 bool OpenGLVideoStream::resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)

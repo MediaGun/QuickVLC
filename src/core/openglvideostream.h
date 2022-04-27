@@ -40,7 +40,6 @@ public:
     ~OpenGLVideoStream();
 
     std::shared_ptr<VideoFrame> getVideoFrame();
-    QOpenGLFramebufferObject *getFbo();
 
 public slots:
     void initContext();

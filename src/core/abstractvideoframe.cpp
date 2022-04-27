@@ -56,7 +56,7 @@ QSize AbstractVideoFrame::size() const
 
 void AbstractVideoFrame::setSize(const QSize &size)
 {
-    m_size = std::move(size);
+    m_size = size;
 }
 
 bool AbstractVideoFrame::isValid()
