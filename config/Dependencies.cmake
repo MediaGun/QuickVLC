@@ -27,7 +27,7 @@ endif()
 
 message(STATUS "Compile with Qt version: ${QT_VERSION}")
 
-find_package(QT NAMES Qt6 COMPONENTS Core Gui REQUIRED)
+find_package(QT NAMES Qt6 COMPONENTS Core Gui BuildInternals REQUIRED)
 find_package(Qt6 COMPONENTS Quick QuickTest REQUIRED)
 find_package(Qt6 COMPONENTS Test REQUIRED)
 find_package(Qt6 COMPONENTS ShaderTools REQUIRED)

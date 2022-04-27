@@ -82,6 +82,7 @@ target_link_libraries(${QUICKVLC_QML}
     PRIVATE
         Qt6::Core
         Qt6::Quick
+        Qt6::QuickPrivate
         ${QUICKVLC_CORE}
 )
 
