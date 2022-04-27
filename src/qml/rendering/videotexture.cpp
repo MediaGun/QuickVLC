@@ -20,28 +20,24 @@
 
 VideoTexture::VideoTexture()
 {
-    //    auto *ni = nativeInterface<QNativeInterface::QSGOpenGLTexture>();
 }
-
-// void VideoTexture::setStream(VideoStream *videoStream)
-//{
-//    m_videoStream = videoStream;
-//}
 
 qint64 VideoTexture::comparisonKey() const
 {
-    //    GLuint textureId = m_videoStream->getVideoFrame()->takeTexture();
+    if (m_nativeObject) {
+        return m_nativeObject;
+    }
 
-    //    return static_cast<qint64>(textureId);
-    return 0;
+    if (m_texture) {
+        return quint64(quintptr(m_texture.data()));
+    }
+
+    return quint64(quintptr(this));
 }
 
 QSize VideoTexture::textureSize() const
 {
-    //    auto size = m_videoStream->getVideoFrame()->size();
-
-    //    return size;
-    return QSize {};
+    return m_size;
 }
 
 bool VideoTexture::hasAlphaChannel() const
@@ -66,4 +62,73 @@ bool VideoTexture::updateTexture()
     //    }
 
     return false;
+}
+
+QRhiTexture *VideoTexture::rhiTexture() const
+{
+    return m_texture.data();
+}
+
+void VideoTexture::commitTextureOperations(QRhi *rhi, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    updateRhiTexture(rhi, resourceUpdates);
+}
+
+void VideoTexture::setRhiTexture(QRhiTexture *texture)
+{
+    m_texture.reset(texture);
+}
+
+void VideoTexture::setData(QRhiTexture::Format f, const QSize &s, const uchar *data, int bytes)
+{
+    m_size = s;
+    m_format = f;
+    m_data = { reinterpret_cast<const char *>(data), bytes };
+}
+
+void VideoTexture::setNativeObject(quint64 obj, const QSize &s, QRhiTexture::Format f)
+{
+    setData(f, s, nullptr, 0);
+
+    if (m_nativeObject != obj) {
+        m_nativeObject = obj;
+        m_texture.reset();
+    }
+}
+
+void VideoTexture::updateRhiTexture(QRhi *rhi, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    bool needsRebuild = m_texture && m_texture->pixelSize() != m_size;
+
+    if (!m_texture) {
+        QRhiTexture::Flags flags;
+
+        if (hasMipmaps()) {
+            flags |= QRhiTexture::MipMapped | QRhiTexture::UsedWithGenerateMips;
+        }
+
+        m_texture.reset(rhi->newTexture(m_format, m_size, 1, flags));
+
+        needsRebuild = true;
+    }
+
+    if (needsRebuild) {
+        m_texture->setPixelSize(m_size);
+        bool created = m_nativeObject ? m_texture->createFrom({ m_nativeObject, 0 }) : m_texture->create();
+
+        if (!created) {
+            qWarning("Failed to build texture (size %dx%d)", m_size.width(), m_size.height());
+            return;
+        }
+    }
+
+    if (!m_data.isEmpty()) {
+        QRhiTextureSubresourceUploadDescription subresDesc(m_data.constData(), m_data.size());
+        subresDesc.setSourceSize(m_size);
+        subresDesc.setDestinationTopLeft(QPoint(0, 0));
+        QRhiTextureUploadEntry entry(0, 0, subresDesc);
+        QRhiTextureUploadDescription desc({ entry });
+        resourceUpdates->uploadTexture(m_texture.data(), desc);
+        m_data.clear();
+    }
 }

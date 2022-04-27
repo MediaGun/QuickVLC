@@ -23,6 +23,8 @@
 VideoMaterial::VideoMaterial()
 {
     setFlag(Blending, false);
+
+    m_texture = std::make_unique<VideoTexture>();
 }
 
 VideoMaterial::~VideoMaterial()
@@ -41,19 +43,15 @@ QSGMaterialShader *VideoMaterial::createShader(QSGRendererInterface::RenderMode 
     return new VideoMaterialShader();
 }
 
-void VideoMaterial::setTexture(const std::shared_ptr<QSGTexture> &texture)
-{
-    //    m_texture = static_cast<VideoTexture *>(texture);
-
-    m_texture = texture;
-}
-
 QSGTexture *VideoMaterial::getTexture()
 {
     return m_texture.get();
 }
 
-void VideoMaterial::updateFrame()
+void VideoMaterial::updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame)
 {
-    //    m_texture->updateTexture();
+    m_videoFrame = std::static_pointer_cast<Vlc::VideoFrame>(frame);
+
+    m_texture->setNativeObject(m_videoFrame->texture(), m_videoFrame->size());
+    m_texture->updateTexture();
 }

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <core/videoframe.h>
+
 #include <QSGGeometryNode>
 
 #include "rendering/videomaterial.h"
@@ -27,9 +29,8 @@ class VideoNode : public QSGGeometryNode
 public:
     VideoNode();
 
-    void setTexture(const std::shared_ptr<QSGTexture> &texture);
     void setRect(const QRectF &rect, const QRectF &sourceRect);
-    void updateFrame();
+    void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
 
 private:
     QSGGeometry m_geometry;

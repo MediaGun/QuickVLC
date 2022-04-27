@@ -20,6 +20,7 @@
 
 #include <QSGMaterial>
 
+#include "core/videoframe.h"
 #include "rendering/videotexture.h"
 
 class VideoMaterial : public QSGMaterial
@@ -31,11 +32,11 @@ public:
     QSGMaterialType *type() const override;
     QSGMaterialShader *createShader(QSGRendererInterface::RenderMode renderMode) const override;
 
-    void setTexture(const std::shared_ptr<QSGTexture> &texture);
     QSGTexture *getTexture();
 
-    void updateFrame();
+    void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
 
 private:
-    std::shared_ptr<QSGTexture> m_texture;
+    std::unique_ptr<VideoTexture> m_texture;
+    std::shared_ptr<Vlc::VideoFrame> m_videoFrame;
 };

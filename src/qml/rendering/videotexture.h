@@ -18,16 +18,14 @@
 
 #pragma once
 
-#include <QSGDynamicTexture>
+#include <private/qrhi_p.h>
 
-//#include "video/videostream.h"
+#include <QSGDynamicTexture>
 
 class VideoTexture : public QSGDynamicTexture
 {
 public:
     VideoTexture();
-
-    //    void setStream(VideoStream *videoStream);
 
     qint64 comparisonKey() const override;
     QSize textureSize() const override;
@@ -35,6 +33,21 @@ public:
     bool hasMipmaps() const override;
     bool updateTexture() override;
 
+    // QSGTexture interface
+    QRhiTexture *rhiTexture() const override;
+    void commitTextureOperations(QRhi *rhi, QRhiResourceUpdateBatch *resourceUpdates) override;
+
+    void setRhiTexture(QRhiTexture *texture);
+    void setData(QRhiTexture::Format f, const QSize &s, const uchar *data, int bytes);
+    void setNativeObject(quint64 obj, const QSize &s, QRhiTexture::Format f = QRhiTexture::RGBA8);
+
 private:
-    //    VideoStream *m_videoStream;
+    void updateRhiTexture(QRhi *rhi, QRhiResourceUpdateBatch *resourceUpdates);
+
+    QRhiTexture::Format m_format;
+    QSize m_size;
+    QByteArray m_data;
+
+    QScopedPointer<QRhiTexture> m_texture;
+    quint64 m_nativeObject = 0;
 };

@@ -67,7 +67,7 @@ void VideoMaterialShader::updateSampledImage(
         //        t->setHorizontalWrapMode(QSGTexture::Repeat);
         //        t->setVerticalWrapMode(QSGTexture::Repeat);
 
-        //        t->commitTextureOperations(state.rhi(), state.resourceUpdateBatch());
+        t->commitTextureOperations(state.rhi(), state.resourceUpdateBatch());
 
         *texture = t;
     }

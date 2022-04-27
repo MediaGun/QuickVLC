@@ -24,13 +24,6 @@ VideoNode::VideoNode() : m_geometry { QSGGeometry::defaultAttributes_TexturedPoi
     setMaterial(&m_material);
 }
 
-void VideoNode::setTexture(const std::shared_ptr<QSGTexture> &texture)
-{
-    m_material.setTexture(texture);
-
-    markDirty(QSGNode::DirtyMaterial);
-}
-
 void VideoNode::setRect(const QRectF &rect, const QRectF &sourceRect)
 {
     QSGGeometry::updateTexturedRectGeometry(&m_geometry, rect, sourceRect);
@@ -38,7 +31,7 @@ void VideoNode::setRect(const QRectF &rect, const QRectF &sourceRect)
     markDirty(QSGNode::DirtyGeometry);
 }
 
-void VideoNode::updateFrame()
+void VideoNode::updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame)
 {
-    m_material.updateFrame();
+    m_material.updateFrame(frame);
 }
