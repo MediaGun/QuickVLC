@@ -153,7 +153,7 @@ void MediaPlayer::setTime(int time)
         return;
     }
 
-    bool changed = libvlc_media_player_set_time(m_vlcMediaPlayer, time, true);
+    bool changed = libvlc_media_player_set_time(m_vlcMediaPlayer, time, false);
 
     if (state() == Enum::Paused && changed == 0) {
         emit timeChanged(time);
@@ -164,7 +164,7 @@ void MediaPlayer::setTime(int time)
 
 void MediaPlayer::setPosition(float pos)
 {
-    libvlc_media_player_set_position(m_vlcMediaPlayer, pos, true);
+    libvlc_media_player_set_position(m_vlcMediaPlayer, pos, false);
 
     Error::printErrorMsg();
 }
