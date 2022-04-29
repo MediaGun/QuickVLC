@@ -62,7 +62,7 @@ public:
 
     float playbackRate() const;
 
-    Enum::State state() const;
+    Enum::PlaybackState playbackState() const;
 
 public slots:
     void setTime(int time);
@@ -99,7 +99,7 @@ signals:
     void seekableChanged(bool seekable);
     void stopped();
     void timeChanged(int time);
-    void stateChanged();
+    void playbackStateChanged();
 
 private:
     static void libvlc_callback(const libvlc_event_t *event, void *data);

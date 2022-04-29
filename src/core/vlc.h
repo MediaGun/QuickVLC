@@ -1,21 +1,21 @@
 /******************************************************************************
-* This file is part of QuickVLC - Qt and libvlc connection library.
-* Copyright (C) 2016 Tadej Novak <tadej@tano.si>, 
-*               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
-*
-* QuickVLC is free software: you can redistribute it and/or modify it 
-* under the terms of the GNU General Public License as published 
-* by the Free Software Foundation, either version 3 of the License, 
-* or (at your option) any later version.
-*
-* QuickVLC is distributed in the hope that it will be useful, 
-* but WITHOUT ANY WARRANTY; without even the implied warranty 
-* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-* See the GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License 
-* along with QuickVLC. If not, see <https://www.gnu.org/licenses/>.
-******************************************************************************/
+ * This file is part of QuickVLC - Qt and libvlc connection library.
+ * Copyright (C) 2016 Tadej Novak <tadej@tano.si>,
+ *               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
+ *
+ * QuickVLC is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * QuickVLC is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QuickVLC. If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
 
 #pragma once
 
@@ -95,7 +95,7 @@ public:
 
     enum Scale { NoScale, S_1_05, S_1_1, S_1_2, S_1_3, S_1_4, S_1_5, S_1_6, S_1_7, S_1_8, S_1_9, S_2_0 };
 
-    enum State { Idle, Opening, Buffering, Playing, Paused, Stopped, Ended, Error };
+    enum PlaybackState { Idle, Opening, Buffering, Playing, Paused, Stopped, Ended, Error };
 
     enum VideoCodec { NoVideo, MPEG2Video, MPEG4Video, H264, Theora };
 
@@ -139,7 +139,7 @@ private:
     Q_ENUM(PlaybackMode)
     Q_ENUM(Ratio)
     Q_ENUM(Scale)
-    Q_ENUM(State)
+    Q_ENUM(PlaybackState)
     Q_ENUM(VideoCodec)
     Q_ENUM(VideoOutput)
 };

@@ -48,6 +48,7 @@ class QUICKVLC_QML_EXPORT MediaPlayer : public MediaSource
     Q_PROPERTY(qint64 position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(bool seekable READ seekable NOTIFY seekableChanged)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(int playbackState READ playbackState NOTIFY playbackStateChanged)
 
 public:
     explicit MediaPlayer(QQuickItem *parent = nullptr);
@@ -71,7 +72,7 @@ public:
 
     bool seekable() const;
 
-    int state() const;
+    int playbackState() const;
 
 signals:
     void autoplayChanged();
@@ -90,4 +91,6 @@ private:
     Vlc::MediaPlayer *m_player;
 
     bool m_autoplay;
+
+    Q_ENUM(Vlc::Enum::PlaybackState)
 };

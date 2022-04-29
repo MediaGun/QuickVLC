@@ -30,6 +30,7 @@ MediaPlayer::MediaPlayer(QQuickItem *parent) : MediaSource { parent }, m_media {
     connect(m_player, &Vlc::MediaPlayer::positionChanged, this, &MediaPlayer::positionChanged);
     connect(m_player, &Vlc::MediaPlayer::seekableChanged, this, &MediaPlayer::seekableChanged);
     connect(m_player, &Vlc::MediaPlayer::timeChanged, this, &MediaPlayer::positionChanged);
+    connect(m_player, &Vlc::MediaPlayer::playbackStateChanged, this, &MediaPlayer::playbackStateChanged);
 
     setPlayer(m_player);
 }
@@ -131,9 +132,9 @@ bool MediaPlayer::seekable() const
     return m_player->seekable();
 }
 
-int MediaPlayer::state() const
+int MediaPlayer::playbackState() const
 {
-    return m_player->state();
+    return m_player->playbackState();
 }
 
 void MediaPlayer::open()

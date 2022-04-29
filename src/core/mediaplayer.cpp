@@ -134,7 +134,7 @@ float MediaPlayer::sampleAspectRatio() const
     return sar;
 }
 
-Enum::State MediaPlayer::state() const
+Enum::PlaybackState MediaPlayer::playbackState() const
 {
     if (!libvlc_media_player_get_media(m_vlcMediaPlayer)) {
         return Enum::Idle;
@@ -144,18 +144,18 @@ Enum::State MediaPlayer::state() const
 
     Error::printErrorMsg();
 
-    return Enum::State(state);
+    return Enum::PlaybackState(state);
 }
 
 void MediaPlayer::setTime(int time)
 {
-    if (!(state() == Enum::Buffering || state() == Enum::Playing || state() == Enum::Paused)) {
+    if (!(playbackState() == Enum::Buffering || playbackState() == Enum::Playing || playbackState() == Enum::Paused)) {
         return;
     }
 
     bool changed = libvlc_media_player_set_time(m_vlcMediaPlayer, time, false);
 
-    if (state() == Enum::Paused && changed == 0) {
+    if (playbackState() == Enum::Paused && changed == 0) {
         emit timeChanged(time);
     }
 
@@ -313,7 +313,7 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
     }
 
     if (event->type >= libvlc_MediaPlayerNothingSpecial && event->type <= libvlc_MediaPlayerEncounteredError) {
-        emit core->stateChanged();
+        emit core->playbackStateChanged();
     }
 }
 
