@@ -62,10 +62,8 @@ void VideoMaterialShader::updateSampledImage(
     if (binding == 1) {
         QSGTexture *t = mat->getTexture();
 
-        //        t->setAnisotropyLevel(QSGTexture::Anisotropy2x);
-        //        t->setFiltering(QSGTexture::Linear);
-        //        t->setHorizontalWrapMode(QSGTexture::Repeat);
-        //        t->setVerticalWrapMode(QSGTexture::Repeat);
+        t->setAnisotropyLevel(QSGTexture::Anisotropy2x);
+        t->setFiltering(QSGTexture::Linear);
 
         t->commitTextureOperations(state.rhi(), state.resourceUpdateBatch());
 
