@@ -21,6 +21,7 @@ message(STATUS "Configuring QML Components library")
 
 SET(QUICKVLC_QML_HEADERS
     qml_shared_export.h
+    audiooutput.h
     videooutput.h
     mediasource.h
     videooutput.h
@@ -33,6 +34,7 @@ SET(QUICKVLC_QML_HEADERS
 )
 
 SET(QUICKVLC_QML_SOURCES
+    audiooutput.cpp
     videooutput.cpp
     mediasource.cpp
     videooutput.cpp

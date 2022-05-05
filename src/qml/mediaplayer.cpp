@@ -21,7 +21,8 @@
 
 #include "core/common.h"
 
-MediaPlayer::MediaPlayer(QQuickItem *parent) : MediaSource { parent }, m_media { nullptr }, m_autoplay { true }
+MediaPlayer::MediaPlayer(QQuickItem *parent)
+    : MediaSource { parent }, m_media { nullptr }, m_audioOutput { nullptr }, m_autoplay { true }
 {
     m_instance = new Vlc::Instance(Vlc::Common::args(), this);
     m_player = new Vlc::MediaPlayer(m_instance);
@@ -45,6 +46,10 @@ MediaPlayer::~MediaPlayer()
         delete m_media;
     }
 
+    if (m_audioOutput) {
+        delete m_audioOutput;
+    }
+
     delete m_player;
     delete m_instance;
 }
@@ -62,6 +67,20 @@ void MediaPlayer::pause()
 void MediaPlayer::stop()
 {
     m_player->stop();
+}
+
+AudioOutput *MediaPlayer::audioOutput() const
+{
+    return m_audioOutput;
+}
+
+void MediaPlayer::setAudioOutput(AudioOutput *audioOutput)
+{
+    m_audioOutput = audioOutput;
+
+    audioOutput->init(m_player);
+
+    emit audioOutputChanged();
 }
 
 bool MediaPlayer::autoplay() const

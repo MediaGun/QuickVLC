@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QQuickItem>
 
+#include "audiooutput.h"
 #include "core/instance.h"
 #include "core/media.h"
 #include "core/mediaplayer.h"
@@ -33,6 +34,7 @@ class QUICKVLC_QML_EXPORT MediaPlayer : public MediaSource
     Q_OBJECT
     QML_ELEMENT
 
+    Q_PROPERTY(AudioOutput *audioOutput READ audioOutput WRITE setAudioOutput NOTIFY audioOutputChanged)
     Q_PROPERTY(bool autoplay READ autoplay WRITE setAutoplay NOTIFY autoplayChanged)
     //    Q_PROPERTY(int activeAudioTrack)
     //    Q_PROPERTY(int activeSubtitleTrack)
@@ -59,6 +61,9 @@ public:
     Q_INVOKABLE void pause();
     Q_INVOKABLE void stop();
 
+    AudioOutput *audioOutput() const;
+    void setAudioOutput(AudioOutput *audioOutput);
+
     bool autoplay() const;
     void setAutoplay(bool autoplay);
 
@@ -75,6 +80,7 @@ public:
     int playbackState() const;
 
 signals:
+    void audioOutputChanged();
     void autoplayChanged();
     void durationChanged();
     void positionChanged();
@@ -89,6 +95,8 @@ private:
     Vlc::Instance *m_instance;
     Vlc::Media *m_media;
     Vlc::MediaPlayer *m_player;
+
+    AudioOutput *m_audioOutput;
 
     bool m_autoplay;
 
