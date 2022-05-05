@@ -21,6 +21,7 @@ message(STATUS "Configuring Core library")
 
 set(QUICKVLC_CORE_HEADERS
     core_shared_export.h
+    audio.h
     error.h
     common.h
     instance.h
@@ -34,6 +35,7 @@ set(QUICKVLC_CORE_HEADERS
 )
 
 set(QUICKVLC_CORE_SOURCES
+    audio.cpp
     error.cpp
     common.cpp
     instance.cpp
