@@ -58,6 +58,11 @@ libvlc_media_player_t *MediaPlayer::core() const
     return m_vlcMediaPlayer;
 }
 
+libvlc_event_manager_t *MediaPlayer::eventManager() const
+{
+    return m_vlcEvents;
+}
+
 int MediaPlayer::length() const
 {
     auto length = libvlc_media_player_get_length(m_vlcMediaPlayer);

@@ -43,6 +43,7 @@ public:
     ~MediaPlayer();
 
     libvlc_media_player_t *core() const;
+    libvlc_event_manager_t *eventManager() const;
 
     int length() const;
 
