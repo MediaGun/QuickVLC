@@ -27,12 +27,15 @@ endif()
 
 message(STATUS "Compile with Qt version: ${QT_VERSION}")
 
+find_package(PkgConfig)
+
 find_package(QT NAMES Qt6 COMPONENTS Core Gui BuildInternals REQUIRED)
 find_package(Qt6 COMPONENTS Quick QuickTest REQUIRED)
 find_package(Qt6 COMPONENTS Test REQUIRED)
 find_package(Qt6 COMPONENTS ShaderTools REQUIRED)
 find_package(Qt6 COMPONENTS OpenGL REQUIRED)
-find_package(LIBVLC REQUIRED)
+
+pkg_check_modules(LIBVLC REQUIRED IMPORTED_TARGET "libvlc>=4.0.0")
 
 
 SET(QT_INSTALL_QML ${CMAKE_INSTALL_PREFIX}/qml)

@@ -58,20 +58,12 @@ set_target_properties(${QUICKVLC_CORE} PROPERTIES
     PUBLIC_HEADER "${QUICKVLC_CORE_HEADERS}"
 )
 
-target_include_directories(${QUICKVLC_CORE}
-    PRIVATE
-        ${LIBVLC_EXTRA_INCLUDE_DIR}
-        ${LIBVLC_EXTRA_INCLUDE_DIR}/vlc/plugins
-        ${LIBVLC_INCLUDE_DIR}
-        ${LIBVLC_INCLUDE_DIR}/vlc/plugins
-)
 
 target_link_libraries(${QUICKVLC_CORE}
     PRIVATE
         Qt6::Core
         Qt6::OpenGL
-        ${LIBVLC_LIBRARY}
-        ${LIBVLCCORE_LIBRARY}
+        PkgConfig::LIBVLC
 )
 
 target_compile_definitions(${QUICKVLC_CORE} PRIVATE QUICKVLC_CORE_LIBRARY)
