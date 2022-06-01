@@ -28,19 +28,11 @@ namespace Vlc {
 Instance::Instance(const QStringList &args, QObject *parent)
     : QObject(parent), m_vlcInstance { nullptr }, m_status { false }
 {
-#if defined(Q_OS_WIN32)  // Will be removed on Windows if confirmed working
-    char **argv = (char **)malloc(sizeof(char **) * args.count());
+    char **argv = (char **)malloc(sizeof(char *) * args.count());
 
     for (int i = 0; i < args.count(); ++i) {
         argv[i] = (char *)qstrdup(args.at(i).toUtf8().data());
     }
-#else
-    char *argv[args.count()];
-
-    for (int i = 0; i < args.count(); ++i) {
-        argv[i] = static_cast<char *>(args.at(i).toUtf8().data());
-    }
-#endif
 
     m_vlcInstance = libvlc_new(args.count(), argv);
 
@@ -53,6 +45,11 @@ Instance::Instance(const QStringList &args, QObject *parent)
     } else {
         qCritical() << "libvlc failed to load!";
     }
+
+    for (int i = 0; i < args.count(); ++i) {
+        free(argv[i]);
+    }
+    free(argv);
 }
 
 Instance::~Instance()
