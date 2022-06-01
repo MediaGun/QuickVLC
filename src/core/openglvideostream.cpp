@@ -67,7 +67,11 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
     if (m_updated) {
         std::swap(m_idx_swap, m_idx_display);
 
-        m_videoFrame = std::make_shared<VideoFrame>(m_buffers[m_idx_display].get());
+        if (m_buffers[m_idx_display]) {
+            m_videoFrame = std::make_shared<VideoFrame>(m_buffers[m_idx_display].get());
+        } else {
+            m_videoFrame = {};
+        }
 
         m_updated = false;
     }
@@ -77,12 +81,12 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
 
 bool OpenGLVideoStream::resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
 {
-    if (cfg->width != m_width || cfg->height != m_height) {
-        cleanup();
-    }
+    {
+        QMutexLocker locker(&m_text_lock);
 
-    for (auto &buffer : m_buffers) {
-        buffer = std::make_unique<QOpenGLFramebufferObject>(cfg->width, cfg->height);
+        for (auto &buffer : m_buffers) {
+            buffer = std::make_unique<QOpenGLFramebufferObject>(cfg->width, cfg->height);
+        }
     }
 
     m_width = cfg->width;
@@ -121,6 +125,7 @@ bool OpenGLVideoStream::setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc
 void OpenGLVideoStream::cleanup()
 {
     m_videoReady.release();
+    QMutexLocker locker(&m_text_lock);
 
     if (m_width == 0 && m_height == 0) {
         return;
