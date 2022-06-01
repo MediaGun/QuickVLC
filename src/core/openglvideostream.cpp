@@ -166,10 +166,15 @@ void *OpenGLVideoStream::getProcAddress(const char *current)
 {
     auto addr = m_context->getProcAddress(current);
 
-    // FIXME: Remove this hack
-    if (strcmp(current, "eglQueryString") == 0) {
-        return nullptr;
+#if QT_CONFIG(xcb_glx_plugin)
+    //blacklist egl lookup on GLX
+    //https://dri.freedesktop.org/wiki/glXGetProcAddressNeverReturnsNULL/
+    if (m_context->nativeInterface<QNativeInterface::QGLXContext>()) {
+        if (QString(current).startsWith("egl")) {
+            return nullptr;
+        }
     }
+#endif
 
     return reinterpret_cast<void *>(addr);
 }
