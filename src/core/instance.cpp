@@ -38,7 +38,7 @@ Instance::Instance(const QStringList &args, QObject *parent)
     char *argv[args.count()];
 
     for (int i = 0; i < args.count(); ++i) {
-        argv[i] = static_cast<char *>(args.at(i).toUtf8().data());
+        argv[i] = static_cast<char *>(qstrdup(args.at(i).toUtf8().data()));
     }
 #endif
 
