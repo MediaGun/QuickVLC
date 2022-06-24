@@ -75,9 +75,9 @@ void Media::initMedia(const QString &location, bool localFile, Instance *instanc
     if (localFile) {
         loc = QDir::toNativeSeparators(loc);
 
-        m_vlcMedia = libvlc_media_new_path(instance->core(), loc.toUtf8().data());
+        m_vlcMedia = libvlc_media_new_path(loc.toUtf8().data());
     } else {
-        m_vlcMedia = libvlc_media_new_location(instance->core(), loc.toUtf8().data());
+        m_vlcMedia = libvlc_media_new_location(loc.toUtf8().data());
     }
 
     m_vlcEvents = libvlc_media_event_manager(m_vlcMedia);
