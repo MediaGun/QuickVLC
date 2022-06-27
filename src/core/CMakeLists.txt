@@ -48,6 +48,13 @@ set(QUICKVLC_CORE_SOURCES
     videoframe.cpp
 )
 
+IF(MSVC OR MINGW)
+    list(APPEND QUICKVLC_CORE_SOURCES
+        compat/asprintf.c
+        compat/vasprintf.c
+    )
+ENDIF()
+
 add_library(${QUICKVLC_CORE} SHARED ${QUICKVLC_CORE_SOURCES} ${QUICKVLC_CORE_HEADERS} )
 
 set_target_properties(${QUICKVLC_CORE} PROPERTIES
