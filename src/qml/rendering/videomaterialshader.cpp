@@ -62,7 +62,8 @@ void VideoMaterialShader::updateSampledImage(
     if (binding == 1) {
         QSGTexture *t = mat->getTexture();
 
-        t->setAnisotropyLevel(QSGTexture::Anisotropy2x);
+        // Anisotropy level could not work: https://doc.qt.io/qt-6/qsgtexture.html#setAnisotropyLevel
+        //        t->setAnisotropyLevel(QSGTexture::Anisotropy2x);
         t->setFiltering(QSGTexture::Linear);
 
         t->commitTextureOperations(state.rhi(), state.resourceUpdateBatch());

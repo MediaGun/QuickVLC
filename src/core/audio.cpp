@@ -92,7 +92,6 @@ void Audio::libvlc_callback(const libvlc_event_t *event, void *data)
     case libvlc_MediaPlayerUnmuted:
         emit core->muteChanged(false);
     case libvlc_MediaPlayerAudioVolume:
-        qDebug() << "Volume set" << event->u.media_player_audio_volume.volume;
         emit core->volumeChanged(event->u.media_player_audio_volume.volume);
         break;
     }

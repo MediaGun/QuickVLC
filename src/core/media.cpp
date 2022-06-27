@@ -68,6 +68,8 @@ QString Media::currentLocation() const
 
 void Media::initMedia(const QString &location, bool localFile, Instance *instance)
 {
+    Q_UNUSED(instance)
+
     m_currentLocation = location;
 
     QString loc = location;
