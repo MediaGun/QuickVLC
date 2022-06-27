@@ -60,6 +60,7 @@ set_target_properties(${QUICKVLC_CORE} PROPERTIES
 
 target_include_directories(${QUICKVLC_CORE}
     PRIVATE
+        ${CMAKE_BINARY_DIR}/src
         ${LIBVLC_EXTRA_INCLUDE_DIR}
         ${LIBVLC_EXTRA_INCLUDE_DIR}/vlc/plugins
         ${LIBVLC_INCLUDE_DIR}

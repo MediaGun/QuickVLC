@@ -21,12 +21,53 @@
 
 #include <vlc/vlc.h>
 
+#include "config.h"
 #include "error.h"
+
+#ifdef Q_OS_WIN
+#include "compat/asprintf.h"
+#endif
 
 namespace Vlc {
 
+void logCallback(void *data, int level, const libvlc_log_t *ctx, const char *fmt, va_list args)
+{
+    Q_UNUSED(ctx)
+
+    auto *instance = static_cast<Instance *>(data);
+
+    if (instance->logLevel() > level) {
+        return;
+    }
+
+    char *result;
+
+    if (vasprintf(&result, fmt, args) < 0) {
+        return;  // LCOV_EXCL_LINE
+    }
+
+    QString message(result);
+    free(result);
+
+    message.prepend("libvlc: ");
+
+    switch (level) {
+    case Enum::ErrorLevel:
+        qCritical(message.toUtf8().data(), NULL);
+        break;
+    case Enum::WarningLevel:
+        qWarning(message.toUtf8().data(), NULL);
+        break;
+    case Enum::NoticeLevel:
+    case Enum::DebugLevel:
+    default:
+        qDebug(message.toUtf8().data(), NULL);
+        break;
+    }
+}
+
 Instance::Instance(const QStringList &args, QObject *parent)
-    : QObject(parent), m_vlcInstance { nullptr }, m_status { false }
+    : QObject(parent), m_vlcInstance { nullptr }, m_status { false }, m_logLevel { Enum::ErrorLevel }
 {
 #if defined(Q_OS_WIN32)  // Will be removed on Windows if confirmed working
     char **argv = (char **)malloc(sizeof(char **) * args.count());
@@ -47,8 +88,11 @@ Instance::Instance(const QStringList &args, QObject *parent)
     Error::printErrorMsg();
 
     if (m_vlcInstance) {
+        libvlc_log_set(m_vlcInstance, logCallback, this);
+
         m_status = true;
 
+        qDebug() << "QuickVLC" << libVersion() << "initialized";
         qDebug() << "Using libvlc version:" << version();
     } else {
         qCritical() << "libvlc failed to load!";
@@ -80,6 +124,35 @@ QString Instance::libVertion()
 QString Instance::version()
 {
     return QString { libvlc_get_version() };
+}
+
+QString Instance::libVersion()
+{
+    QString version;
+
+#if defined(QUICKVLC_VERSION)
+    version.append(QString { QUICKVLC_VERSION });
+#else
+    version.append(QString { "Unknown" });
+#endif
+
+#if defined(QUICKVLC_REVISION)
+    if (QUICKVLC_REVISION != 0 && !QString(QUICKVLC_REVISION).isEmpty()) {
+        version.append("-" + QString { QUICKVLC_REVISION });
+    }
+#endif
+
+    return version;
+}
+
+Enum::LogLevel Instance::logLevel() const
+{
+    return m_logLevel;
+}
+
+void Instance::setLogLevel(Enum::LogLevel level)
+{
+    m_logLevel = level;
 }
 
 }  // namespace Vlc
