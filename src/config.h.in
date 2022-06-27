@@ -18,3 +18,16 @@
 ******************************************************************************/
 
 #pragma once
+
+// Version
+#define QUICKVLC_VERSION "@QUICKVLC_VERSION@"
+#define QUICKVLC_REVISION "@PROJECT_REVISION@"
+
+#define QUICKVLC_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define QUICKVLC_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define QUICKVLC_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
+
+#define QUICKVLC_QML_MODULE "@QUICKVLC_QML_NAME@"
+
+// libVLC this library is built with
+#define LIBVLC_VERSION "@LIBVLC_VERSION@"

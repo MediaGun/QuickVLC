@@ -36,3 +36,7 @@ find_package(LIBVLC REQUIRED)
 
 
 SET(QT_INSTALL_QML ${CMAKE_INSTALL_PREFIX}/qml)
+
+# Add libVLC libraries
+# Define version, if not defined use latest relased
+SET(LIBVLC_VERSION 0x040000 CACHE STRING "libVLC version used")
