@@ -66,6 +66,11 @@ QString Media::currentLocation() const
     return m_currentLocation;
 }
 
+qint64 Media::duration() const
+{
+    return libvlc_media_get_duration(m_vlcMedia);
+}
+
 void Media::initMedia(const QString &location, bool localFile, Instance *instance)
 {
     Q_UNUSED(instance)

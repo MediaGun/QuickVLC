@@ -41,6 +41,7 @@ class QUICKVLC_QML_EXPORT MediaPlayer : public MediaSource
     //    Q_PROPERTY(int activeVideoTrack)
     //    Q_PROPERTY(float bufferProgress)
     Q_PROPERTY(qint64 duration READ duration NOTIFY durationChanged)
+    Q_PROPERTY(qint64 mediaDuration READ mediaDuration NOTIFY mediaDurationChanged)
     //    Q_PROPERTY(QString error)
     //    Q_PROPERTY(QString errorString)
     //    Q_PROPERTY(bool hasAudio)
@@ -72,6 +73,8 @@ public:
 
     qint64 duration() const;
 
+    qint64 mediaDuration() const;
+
     qint64 position() const;
     void setPosition(qint64 position);
 
@@ -83,6 +86,7 @@ signals:
     void audioOutputChanged();
     void autoplayChanged();
     void durationChanged();
+    void mediaDurationChanged();
     void positionChanged();
     void seekableChanged();
     void sourceChanged();

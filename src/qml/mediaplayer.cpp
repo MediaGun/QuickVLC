@@ -136,6 +136,15 @@ qint64 MediaPlayer::duration() const
     return m_player->length();
 }
 
+qint64 MediaPlayer::mediaDuration() const
+{
+    if (m_media) {
+        return m_media->duration();
+    }
+
+    return 0;
+}
+
 qint64 MediaPlayer::position() const
 {
     return m_player->time();
