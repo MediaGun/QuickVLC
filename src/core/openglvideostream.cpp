@@ -22,7 +22,8 @@
 
 namespace Vlc {
 
-OpenGLVideoStream::OpenGLVideoStream(QObject *parent) : QObject { parent }
+OpenGLVideoStream::OpenGLVideoStream(QObject *parent)
+    : AbstractVideoStream { parent }
 {
     m_context = new QOpenGLContext(parent);
     m_surface = new QOffscreenSurface(nullptr, parent);

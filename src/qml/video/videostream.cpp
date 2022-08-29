@@ -21,8 +21,18 @@
 #include "core/mediaplayer.h"
 #include "videooutput.h"
 
-VideoStream::VideoStream(QObject *parent) : Vlc::OpenGLVideoStream(parent)
+include <core/openglvideostream.h>
+
+VideoStream::VideoStream(QObject *parent)
+    : QObject(parent)
 {
+    m_videostream = std::make_unique<Vlc::OpenGLVideoStream>();
+
+    connect(
+        m_videostream.get(), &Vlc::AbstractVideoStream::frameUpdated,
+        this, &VideoStream::frameUpdated,
+        Qt::QueuedConnection);
+
 }
 
 VideoStream::~VideoStream()
@@ -33,12 +43,17 @@ void VideoStream::init(Vlc::MediaPlayer *player)
 {
     m_player = player;
 
-    setCallbacks(player);
+    m_videostream->setCallbacks(player);
+}
+
+void VideoStream::initContext()
+{
+    m_videostream->initContext();
 }
 
 void VideoStream::deinit()
 {
-    unsetCallbacks(m_player);
+    m_videostream->unsetCallbacks(m_player);
 
     m_player = nullptr;
 }
@@ -62,7 +77,7 @@ void VideoStream::frameUpdated()
     //    std::shared_ptr<const Vlc::VideoFrame> frame = std::dynamic_pointer_cast<const
     //    Vlc::VideoFrame>(getVideoFrame());
 
-    auto frame = getVideoFrame();
+    auto frame = m_videostream->getVideoFrame();
 
     for (auto *output : m_attachedOutputs) {
         output->presentFrame(frame);

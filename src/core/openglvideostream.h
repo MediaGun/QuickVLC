@@ -31,22 +31,17 @@
 
 namespace Vlc {
 
-class QUICKVLC_CORE_EXPORT OpenGLVideoStream : public QObject, public AbstractVideoStream, protected QOpenGLFunctions
+class QUICKVLC_CORE_EXPORT OpenGLVideoStream : public AbstractVideoStream, protected QOpenGLFunctions
 {
-    Q_OBJECT
-
 public:
     explicit OpenGLVideoStream(QObject *parent = nullptr);
     ~OpenGLVideoStream();
 
-    std::shared_ptr<VideoFrame> getVideoFrame();
+    std::shared_ptr<VideoFrame> getVideoFrame() override;
 
-public slots:
-    void initContext();
+    void initContext() override;
 
 private:
-    Q_INVOKABLE virtual void frameUpdated() = 0;
-
     libvlc_video_engine_t videoEngine() override;
     bool resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg) override;
     bool setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out) override;

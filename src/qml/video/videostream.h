@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <core/openglvideostream.h>
-
 #include <QObject>
 #include <set>
 
@@ -27,10 +25,12 @@ class VideoOutput;
 
 namespace Vlc {
 class MediaPlayer;
+class AbstractVideoStream;
 };
 
-class VideoStream : public Vlc::OpenGLVideoStream
+class VideoStream : public QObject
 {
+    Q_OBJECT
 public:
     explicit VideoStream(QObject *parent = nullptr);
 
@@ -39,12 +39,15 @@ public:
     void init(Vlc::MediaPlayer *player);
     void deinit();
 
+    void initContext();
+
     void registerVideoOutput(VideoOutput *output);
     void deregisterVideoOutput(VideoOutput *output);
 
 private:
-    Q_INVOKABLE virtual void frameUpdated() override;
+    void frameUpdated();
 
+    std::unique_ptr<Vlc::AbstractVideoStream> m_videostream;
     std::set<VideoOutput *> m_attachedOutputs;
 
     Vlc::MediaPlayer *m_player;

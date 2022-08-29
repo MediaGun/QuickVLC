@@ -19,23 +19,37 @@
 
 #pragma once
 
+#include <memory>
+
 #include <vlc/vlc.h>
 
+#include <QObject>
 #include "core_shared_export.h"
+
 
 namespace Vlc {
 
 class MediaPlayer;
+class VideoFrame;
 
-class QUICKVLC_CORE_EXPORT AbstractVideoStream
+class QUICKVLC_CORE_EXPORT AbstractVideoStream : public QObject
 {
+    Q_OBJECT
 public:
-    explicit AbstractVideoStream();
+    explicit AbstractVideoStream(QObject *parent = nullptr);
     virtual ~AbstractVideoStream();
 
     void setCallbacks(Vlc::MediaPlayer *player);
 
     void unsetCallbacks(Vlc::MediaPlayer *player);
+
+    virtual std::shared_ptr<VideoFrame> getVideoFrame() = 0;
+
+signals:
+    void frameUpdated();
+
+public slots:
+    virtual void initContext() = 0;
 
 protected:
     virtual libvlc_video_engine_t videoEngine() = 0;

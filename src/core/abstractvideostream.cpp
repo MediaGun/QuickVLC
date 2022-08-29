@@ -35,7 +35,7 @@ static inline AbstractVideoStream *p_this(void **opaque)
 
 #define P_THIS p_this(opaque)
 
-AbstractVideoStream::AbstractVideoStream()
+AbstractVideoStream::AbstractVideoStream(QObject *parent) : QObject(parent)
 {
 }
 
