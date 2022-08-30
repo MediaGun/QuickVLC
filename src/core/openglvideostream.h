@@ -37,7 +37,7 @@ public:
     explicit OpenGLVideoStream(QObject *parent = nullptr);
     ~OpenGLVideoStream();
 
-    std::shared_ptr<VideoFrame> getVideoFrame() override;
+    std::shared_ptr<AbstractVideoFrame> getVideoFrame() override;
 
     void initContext() override;
 

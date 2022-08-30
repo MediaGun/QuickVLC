@@ -30,7 +30,7 @@
 namespace Vlc {
 
 class MediaPlayer;
-class VideoFrame;
+class AbstractVideoFrame;
 
 class QUICKVLC_CORE_EXPORT AbstractVideoStream : public QObject
 {
@@ -43,7 +43,7 @@ public:
 
     void unsetCallbacks(Vlc::MediaPlayer *player);
 
-    virtual std::shared_ptr<VideoFrame> getVideoFrame() = 0;
+    virtual std::shared_ptr<AbstractVideoFrame> getVideoFrame() = 0;
 
 signals:
     void frameUpdated();

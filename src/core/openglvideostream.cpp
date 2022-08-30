@@ -61,7 +61,7 @@ libvlc_video_engine_t OpenGLVideoStream::videoEngine()
     return m_context->isOpenGLES() ? libvlc_video_engine_gles2 : libvlc_video_engine_opengl;
 }
 
-std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
+std::shared_ptr<AbstractVideoFrame> OpenGLVideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_text_lock);
 

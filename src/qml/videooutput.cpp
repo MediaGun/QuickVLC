@@ -108,7 +108,7 @@ void VideoOutput::setCropRatio(int cropRatio)
     emit cropRatioChanged();
 }
 
-void VideoOutput::presentFrame(const std::shared_ptr<Vlc::VideoFrame> &frame)
+void VideoOutput::presentFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame)
 {
     m_frame = frame;
 
