@@ -80,7 +80,7 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
     return m_videoFrame;
 }
 
-bool OpenGLVideoStream::resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
+bool OpenGLVideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
 {
     {
         QMutexLocker locker(&m_text_lock);

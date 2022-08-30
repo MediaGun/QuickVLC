@@ -53,7 +53,7 @@ public slots:
 
 protected:
     virtual libvlc_video_engine_t videoEngine() = 0;
-    virtual bool resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg) = 0;
+    virtual bool updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg) = 0;
     virtual bool setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out) = 0;
     virtual void cleanup() = 0;
     virtual void swap() = 0;
@@ -61,10 +61,11 @@ protected:
     virtual void *getProcAddress(const char *current) = 0;
 
 private:
-    static bool resize_cb(void *opaque, const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg);
     static bool setup_cb(
         void **opaque, const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out);
     static void cleanup_cb(void *opaque);
+    static bool update_output_cb(
+        void *opaque, const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg);
     static void swap_cb(void *opaque);
     static bool make_current_cb(void *opaque, bool current);
     static void *get_proc_address_cb(void *opaque, const char *current);

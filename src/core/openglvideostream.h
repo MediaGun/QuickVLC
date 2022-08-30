@@ -43,7 +43,7 @@ public:
 
 private:
     libvlc_video_engine_t videoEngine() override;
-    bool resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg) override;
+    bool updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg) override;
     bool setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out) override;
     void cleanup() override;
     void swap() override;
