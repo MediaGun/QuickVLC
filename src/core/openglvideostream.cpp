@@ -153,6 +153,12 @@ void OpenGLVideoStream::swap()
     m_buffers[m_idx_render]->bind();
 }
 
+bool OpenGLVideoStream::selectPlane(size_t plane, void *output)
+{
+    //N/A
+    return true;
+}
+
 bool OpenGLVideoStream::makeCurrent(bool isCurrent)
 {
     if (isCurrent) {

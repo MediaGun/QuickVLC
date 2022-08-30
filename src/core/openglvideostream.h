@@ -47,6 +47,7 @@ private:
     bool setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out) override;
     void cleanup() override;
     void swap() override;
+    bool selectPlane(size_t plane, void *output) override;
     bool makeCurrent(bool isCurrent) override;
     void *getProcAddress(const char *current) override;
 

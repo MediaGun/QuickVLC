@@ -58,6 +58,7 @@ protected:
     virtual void cleanup() = 0;
     virtual void swap() = 0;
     virtual bool makeCurrent(bool isCurrent) = 0;
+    virtual bool selectPlane(size_t plane, void *output) = 0;
     virtual void *getProcAddress(const char *current) = 0;
 
 private:
@@ -68,6 +69,7 @@ private:
         void *opaque, const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg);
     static void swap_cb(void *opaque);
     static bool make_current_cb(void *opaque, bool current);
+    static bool select_plane_cb(void *opaque, size_t plane, void *output);
     static void *get_proc_address_cb(void *opaque, const char *current);
 };
 
