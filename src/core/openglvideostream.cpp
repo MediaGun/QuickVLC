@@ -19,10 +19,11 @@
 #include "openglvideostream.h"
 
 #include <QOpenGLContext>
+#include <QQuickItem>
 
 namespace Vlc {
 
-OpenGLVideoStream::OpenGLVideoStream(QObject *parent)
+OpenGLVideoStream::OpenGLVideoStream(QQuickItem *parent)
     : AbstractVideoStream { parent }
 {
     m_context = new QOpenGLContext(parent);

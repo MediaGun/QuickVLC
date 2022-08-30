@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <QObject>
+#include <QtQuick/QQuickItem>
 #include <set>
 
 class VideoOutput;
@@ -32,7 +32,7 @@ class VideoStream : public QObject
 {
     Q_OBJECT
 public:
-    explicit VideoStream(QObject *parent = nullptr);
+    explicit VideoStream(QQuickItem *parent = nullptr);
 
     ~VideoStream();
 

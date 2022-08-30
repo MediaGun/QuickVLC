@@ -78,6 +78,7 @@ target_link_libraries(${QUICKVLC_CORE}
     PRIVATE
         Qt6::Core
         Qt6::OpenGL
+        Qt6::Quick
         ${LIBVLC_LIBRARY}
         ${LIBVLCCORE_LIBRARY}
 )

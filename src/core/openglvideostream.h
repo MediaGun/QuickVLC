@@ -34,7 +34,7 @@ namespace Vlc {
 class QUICKVLC_CORE_EXPORT OpenGLVideoStream : public AbstractVideoStream, protected QOpenGLFunctions
 {
 public:
-    explicit OpenGLVideoStream(QObject *parent = nullptr);
+    explicit OpenGLVideoStream(QQuickItem *parent = nullptr);
     ~OpenGLVideoStream();
 
     std::shared_ptr<AbstractVideoFrame> getVideoFrame() override;

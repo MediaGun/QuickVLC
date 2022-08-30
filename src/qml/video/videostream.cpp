@@ -23,7 +23,7 @@
 
 include <core/openglvideostream.h>
 
-VideoStream::VideoStream(QObject *parent)
+VideoStream::VideoStream(QQuickItem *parent)
     : QObject(parent)
 {
     m_videostream = std::make_unique<Vlc::OpenGLVideoStream>();
