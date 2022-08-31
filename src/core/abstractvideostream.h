@@ -26,6 +26,7 @@
 #include <QObject>
 #include "core_shared_export.h"
 
+class QQuickWindow;
 
 namespace Vlc {
 
@@ -42,6 +43,8 @@ public:
     void setCallbacks(Vlc::MediaPlayer *player);
 
     void unsetCallbacks(Vlc::MediaPlayer *player);
+
+    virtual void windowChanged(QQuickWindow *window) = 0;
 
     virtual std::shared_ptr<AbstractVideoFrame> getVideoFrame() = 0;
 

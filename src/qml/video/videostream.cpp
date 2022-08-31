@@ -51,6 +51,11 @@ void VideoStream::initContext()
     m_videostream->initContext();
 }
 
+void VideoStream::windowChanged(QQuickWindow *window)
+{
+    m_videostream->windowChanged(window);
+}
+
 void VideoStream::deinit()
 {
     m_videostream->unsetCallbacks(m_player);

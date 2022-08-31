@@ -41,6 +41,8 @@ public:
 
     void initContext();
 
+    void windowChanged(QQuickWindow *window);
+
     void registerVideoOutput(VideoOutput *output);
     void deregisterVideoOutput(VideoOutput *output);
 
@@ -50,5 +52,5 @@ private:
     std::unique_ptr<Vlc::AbstractVideoStream> m_videostream;
     std::set<VideoOutput *> m_attachedOutputs;
 
-    Vlc::MediaPlayer *m_player;
+    Vlc::MediaPlayer *m_player = nullptr;
 };

@@ -35,6 +35,11 @@ OpenGLVideoStream::~OpenGLVideoStream()
     cleanup();
 }
 
+void OpenGLVideoStream::windowChanged(QQuickWindow *window)
+{
+    m_window = window;
+}
+
 void OpenGLVideoStream::initContext()
 {
     //    Q_ASSERT(QSGRendererInterface::isApiRhiBased(QSGRendererInterface::OpenGL));

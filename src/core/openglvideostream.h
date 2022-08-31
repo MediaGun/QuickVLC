@@ -39,6 +39,7 @@ public:
 
     std::shared_ptr<AbstractVideoFrame> getVideoFrame() override;
 
+    void windowChanged(QQuickWindow *window) override;
     void initContext() override;
 
 private:
@@ -51,9 +52,10 @@ private:
     bool makeCurrent(bool isCurrent) override;
     void *getProcAddress(const char *current) override;
 
-    QOpenGLContext *m_context;
-    QOffscreenSurface *m_surface;
+    QOpenGLContext *m_context = nullptr;
+    QOffscreenSurface *m_surface = nullptr;
     QSemaphore m_videoReady;
+    QQuickWindow *m_window = nullptr;
 
     unsigned m_width = 0;
     unsigned m_height = 0;
