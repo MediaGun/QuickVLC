@@ -141,7 +141,9 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 
     auto rects = calculateFillMode(m_frame->width(), m_frame->height());
 
-    node->setRect(rects.out, rects.source);
+    //FIXME
+    node->setRect(rects.out);
+    //node->setSourceRect(rects.source);
 
     return node;
 }

@@ -37,6 +37,5 @@ public:
     void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
 
 private:
-    std::unique_ptr<VideoTexture> m_texture;
-    std::shared_ptr<Vlc::OpenGLVideoFrame> m_videoFrame;
+    std::unique_ptr<QSGTexture> m_texture;
 };

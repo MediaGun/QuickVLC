@@ -150,11 +150,9 @@ void OpenGLVideoStream::swap()
 
     m_updated = true;
 
-    QMetaObject::invokeMethod(this, &OpenGLVideoStream::frameUpdated, Qt::QueuedConnection);
-
-    //    frameUpdated();
-
     std::swap(m_idx_swap, m_idx_render);
+
+    emit frameUpdated();
 
     m_buffers[m_idx_render]->bind();
 }

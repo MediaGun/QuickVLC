@@ -79,9 +79,6 @@ void VideoStream::deregisterVideoOutput(VideoOutput *output)
 
 void VideoStream::frameUpdated()
 {
-    //    std::shared_ptr<const Vlc::VideoFrame> frame = std::dynamic_pointer_cast<const
-    //    Vlc::VideoFrame>(getVideoFrame());
-
     auto frame = m_videostream->getVideoFrame();
 
     for (auto *output : m_attachedOutputs) {
