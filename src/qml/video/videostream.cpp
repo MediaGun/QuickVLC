@@ -21,12 +21,24 @@
 #include "core/mediaplayer.h"
 #include "videooutput.h"
 
-include <core/openglvideostream.h>
+#if defined(Q_OS_WIN)
+#include <core/d3d11videostream.h>
+#endif
+#include <core/openglvideostream.h>
 
 VideoStream::VideoStream(QQuickItem *parent)
     : QObject(parent)
 {
-    m_videostream = std::make_unique<Vlc::OpenGLVideoStream>();
+#if defined(Q_OS_WIN)
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11) {
+        m_videostream = std::make_unique<Vlc::D3D11VideoStream>();
+    } else
+#endif
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi) {
+        m_videostream = std::make_unique<Vlc::OpenGLVideoStream>();
+    }
+    else
+        assert(false);
 
     connect(
         m_videostream.get(), &Vlc::AbstractVideoStream::frameUpdated,
