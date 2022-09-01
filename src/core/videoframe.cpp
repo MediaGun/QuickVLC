@@ -40,4 +40,15 @@ GLuint OpenGLVideoFrame::texture() const
     return m_textureId;
 }
 
+bool OpenGLVideoFrame::isFlipped() const
+{
+    //OpenGL textures are upside down
+    return true;
+}
+
+QSGTexture *OpenGLVideoFrame::getQSGTexture()
+{
+    return QNativeInterface::QSGOpenGLTexture::fromNative(m_textureId, m_window, size());
+}
+
 }  // namespace Vlc

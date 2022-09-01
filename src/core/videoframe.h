@@ -35,6 +35,10 @@ public:
 
     GLuint texture() const;
 
+    bool isFlipped() const override;
+
+    QSGTexture *getQSGTexture() override;
+
 private:
     GLuint m_textureId;
     QQuickWindow *m_window;
