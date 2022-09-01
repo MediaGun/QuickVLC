@@ -69,7 +69,7 @@ private:
 
     bool m_updated = false;
 
-    std::shared_ptr<VideoFrame> m_videoFrame;
+    std::shared_ptr<OpenGLVideoFrame> m_videoFrame;
 };
 
 }  // namespace Vlc

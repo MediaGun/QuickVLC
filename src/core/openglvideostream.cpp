@@ -75,7 +75,7 @@ std::shared_ptr<AbstractVideoFrame> OpenGLVideoStream::getVideoFrame()
         std::swap(m_idx_swap, m_idx_display);
 
         if (m_buffers[m_idx_display]) {
-            m_videoFrame = std::make_shared<VideoFrame>(m_buffers[m_idx_display].get());
+            m_videoFrame = std::make_shared<OpenGLVideoFrame>(m_buffers[m_idx_display].get(), m_window);
         } else {
             m_videoFrame = {};
         }

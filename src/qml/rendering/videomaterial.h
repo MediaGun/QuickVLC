@@ -38,5 +38,5 @@ public:
 
 private:
     std::unique_ptr<VideoTexture> m_texture;
-    std::shared_ptr<Vlc::VideoFrame> m_videoFrame;
+    std::shared_ptr<Vlc::OpenGLVideoFrame> m_videoFrame;
 };

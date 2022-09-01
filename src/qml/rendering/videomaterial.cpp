@@ -50,7 +50,7 @@ QSGTexture *VideoMaterial::getTexture()
 
 void VideoMaterial::updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame)
 {
-    m_videoFrame = std::static_pointer_cast<Vlc::VideoFrame>(frame);
+    m_videoFrame = std::static_pointer_cast<Vlc::OpenGLVideoFrame>(frame);
 
     m_texture->setNativeObject(m_videoFrame->texture(), m_videoFrame->size());
     m_texture->updateTexture();
