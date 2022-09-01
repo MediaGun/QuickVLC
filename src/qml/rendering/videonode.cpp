@@ -26,6 +26,7 @@ VideoNode::VideoNode()
 
 void VideoNode::updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame)
 {
+    m_frame = frame;
     setTexture(frame->getQSGTexture());
 
     if (frame->isFlipped())

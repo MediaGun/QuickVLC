@@ -26,6 +26,7 @@ class VideoOutput;
 namespace Vlc {
 class MediaPlayer;
 class AbstractVideoStream;
+class AbstractVideoFrame;
 };
 
 class VideoStream : public QObject
@@ -45,6 +46,8 @@ public:
 
     void registerVideoOutput(VideoOutput *output);
     void deregisterVideoOutput(VideoOutput *output);
+
+    std::shared_ptr<Vlc::AbstractVideoFrame> getVideoFrame();
 
 private:
     void frameUpdated();

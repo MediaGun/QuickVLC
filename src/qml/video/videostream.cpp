@@ -91,9 +91,12 @@ void VideoStream::deregisterVideoOutput(VideoOutput *output)
 
 void VideoStream::frameUpdated()
 {
-    auto frame = m_videostream->getVideoFrame();
-
     for (auto *output : m_attachedOutputs) {
-        output->presentFrame(frame);
+        output->presentFrame();
     }
+}
+
+std::shared_ptr<Vlc::AbstractVideoFrame> VideoStream::getVideoFrame()
+{
+    return m_videostream->getVideoFrame();
 }

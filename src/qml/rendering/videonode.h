@@ -24,10 +24,17 @@
 
 #include "rendering/videomaterial.h"
 
+namespace {
+class AbstractVideoFrame;
+}
+
 class VideoNode : public QSGSimpleTextureNode
 {
 public:
     VideoNode();
 
     void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
+
+private:
+    std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;
 };

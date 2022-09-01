@@ -71,3 +71,8 @@ void MediaSource::sync()
 void MediaSource::cleanup()
 {
 }
+
+std::shared_ptr<Vlc::AbstractVideoFrame> MediaSource::getVideoFrame()
+{
+    return m_videoStream->getVideoFrame();
+}

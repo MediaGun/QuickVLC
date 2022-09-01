@@ -67,7 +67,7 @@ public:
 
     void setCropRatio(int cropRatio);
 
-    void presentFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
+    void presentFrame();
 
 signals:
     void contextReady(QOpenGLContext *ctx);
