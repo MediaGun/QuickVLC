@@ -152,7 +152,8 @@ struct D3D11VideoStream::D3D11VideoStreamPrivate
     ComPtr<ID3D11DeviceContext> vlcD3DContext;
 
     std::shared_ptr<D3DVideoFrame> renderTexture;
-    std::shared_ptr<D3DVideoFrame> swapTexture;
+    std::shared_ptr<D3DVideoFrame> swap1Texture;
+    std::shared_ptr<D3DVideoFrame> swap2Texture;
     std::shared_ptr<D3DVideoFrame> displayTexture;
 
     unsigned width = 800;
@@ -242,7 +243,8 @@ std::shared_ptr<AbstractVideoFrame> D3D11VideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_priv->text_lock);
     if (m_priv->updated) {
-        std::swap(m_priv->swapTexture, m_priv->displayTexture);
+        std::swap(m_priv->swap1Texture, m_priv->swap2Texture);
+        std::swap(m_priv->swap2Texture, m_priv->displayTexture);
         m_priv->updated = false;
     }
     return m_priv->displayTexture;
@@ -256,8 +258,11 @@ bool D3D11VideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc
         m_priv->height = cfg->height;
 
         QMutexLocker locker(&m_priv->text_lock);
-        m_priv->swapTexture = std::make_shared<D3DVideoFrame>();
-        m_priv->swapTexture->init(
+        m_priv->swap1Texture = std::make_shared<D3DVideoFrame>();
+        m_priv->swap1Texture->init(
+            m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
+        m_priv->swap2Texture = std::make_shared<D3DVideoFrame>();
+        m_priv->swap2Texture->init(
             m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
         m_priv->renderTexture = std::make_shared<D3DVideoFrame>();
         m_priv->renderTexture->init(
