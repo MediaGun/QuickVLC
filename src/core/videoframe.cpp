@@ -18,23 +18,37 @@
  ******************************************************************************/
 
 #include "videoframe.h"
+#include <QtQuick/qsgtexture_platform.h>
 
 namespace Vlc {
 
-VideoFrame::VideoFrame(QOpenGLFramebufferObject *fbo) : AbstractVideoFrame()
+OpenGLVideoFrame::OpenGLVideoFrame(QOpenGLFramebufferObject *fbo, QQuickWindow* window) 
+    : AbstractVideoFrame()
+    , m_window(window)
 {
     m_textureId = fbo->texture();
 
     setSize(fbo->size());
 }
 
-VideoFrame::~VideoFrame()
+OpenGLVideoFrame::~OpenGLVideoFrame()
 {
 }
 
-GLuint VideoFrame::texture() const
+GLuint OpenGLVideoFrame::texture() const
 {
     return m_textureId;
+}
+
+bool OpenGLVideoFrame::isFlipped() const
+{
+    //OpenGL textures are upside down
+    return true;
+}
+
+QSGTexture *OpenGLVideoFrame::getQSGTexture()
+{
+    return QNativeInterface::QSGOpenGLTexture::fromNative(m_textureId, m_window, size());
 }
 
 }  // namespace Vlc

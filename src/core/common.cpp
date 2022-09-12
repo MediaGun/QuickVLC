@@ -37,6 +37,9 @@ QStringList args()
                  << "--no-osd"
                  << "--no-loop"
                  << "--no-video-title-show"
+#if defined(Q_OS_WIN)
+                 << "--dec-dev=dxva2"
+#endif
 #if defined(Q_OS_DARWIN)
                  << "--vout=macosx"
 #endif

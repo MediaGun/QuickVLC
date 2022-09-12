@@ -26,17 +26,22 @@
 
 namespace Vlc {
 
-class QUICKVLC_CORE_EXPORT VideoFrame : public AbstractVideoFrame
+class QUICKVLC_CORE_EXPORT OpenGLVideoFrame : public AbstractVideoFrame
 {
 public:
-    explicit VideoFrame(QOpenGLFramebufferObject *fbo);
+    explicit OpenGLVideoFrame(QOpenGLFramebufferObject *fbo, QQuickWindow *window);
 
-    ~VideoFrame();
+    ~OpenGLVideoFrame();
 
     GLuint texture() const;
 
+    bool isFlipped() const override;
+
+    QSGTexture *getQSGTexture() override;
+
 private:
     GLuint m_textureId;
+    QQuickWindow *m_window;
 };
 
 }  // namespace Vlc

@@ -20,19 +20,21 @@
 
 #include <core/videoframe.h>
 
-#include <QSGGeometryNode>
+#include <QSGSimpleTextureNode>
 
 #include "rendering/videomaterial.h"
 
-class VideoNode : public QSGGeometryNode
+namespace {
+class AbstractVideoFrame;
+}
+
+class VideoNode : public QSGSimpleTextureNode
 {
 public:
     VideoNode();
 
-    void setRect(const QRectF &rect, const QRectF &sourceRect);
     void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
 
 private:
-    QSGGeometry m_geometry;
-    VideoMaterial m_material;
+    std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;
 };

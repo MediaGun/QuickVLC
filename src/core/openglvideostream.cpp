@@ -19,10 +19,12 @@
 #include "openglvideostream.h"
 
 #include <QOpenGLContext>
+#include <QQuickItem>
 
 namespace Vlc {
 
-OpenGLVideoStream::OpenGLVideoStream(QObject *parent) : QObject { parent }
+OpenGLVideoStream::OpenGLVideoStream(QQuickItem *parent)
+    : AbstractVideoStream { parent }
 {
     m_context = new QOpenGLContext(parent);
     m_surface = new QOffscreenSurface(nullptr, parent);
@@ -31,6 +33,11 @@ OpenGLVideoStream::OpenGLVideoStream(QObject *parent) : QObject { parent }
 OpenGLVideoStream::~OpenGLVideoStream()
 {
     cleanup();
+}
+
+void OpenGLVideoStream::windowChanged(QQuickWindow *window)
+{
+    m_window = window;
 }
 
 void OpenGLVideoStream::initContext()
@@ -60,7 +67,7 @@ libvlc_video_engine_t OpenGLVideoStream::videoEngine()
     return m_context->isOpenGLES() ? libvlc_video_engine_gles2 : libvlc_video_engine_opengl;
 }
 
-std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
+std::shared_ptr<AbstractVideoFrame> OpenGLVideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_text_lock);
 
@@ -68,7 +75,7 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
         std::swap(m_idx_swap, m_idx_display);
 
         if (m_buffers[m_idx_display]) {
-            m_videoFrame = std::make_shared<VideoFrame>(m_buffers[m_idx_display].get());
+            m_videoFrame = std::make_shared<OpenGLVideoFrame>(m_buffers[m_idx_display].get(), m_window);
         } else {
             m_videoFrame = {};
         }
@@ -79,7 +86,7 @@ std::shared_ptr<VideoFrame> OpenGLVideoStream::getVideoFrame()
     return m_videoFrame;
 }
 
-bool OpenGLVideoStream::resize(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
+bool OpenGLVideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
 {
     {
         QMutexLocker locker(&m_text_lock);
@@ -143,13 +150,17 @@ void OpenGLVideoStream::swap()
 
     m_updated = true;
 
-    QMetaObject::invokeMethod(this, &OpenGLVideoStream::frameUpdated, Qt::QueuedConnection);
-
-    //    frameUpdated();
-
     std::swap(m_idx_swap, m_idx_render);
 
+    emit frameUpdated();
+
     m_buffers[m_idx_render]->bind();
+}
+
+bool OpenGLVideoStream::selectPlane(size_t plane, void *output)
+{
+    //N/A
+    return true;
 }
 
 bool OpenGLVideoStream::makeCurrent(bool isCurrent)

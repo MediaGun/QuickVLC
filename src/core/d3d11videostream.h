@@ -19,27 +19,26 @@
 #pragma once
 
 #include <QMutex>
-#include <QOffscreenSurface>
-#include <QOpenGLContext>
-#include <QOpenGLFramebufferObject>
-#include <QOpenGLFunctions>
 #include <QSemaphore>
+#include <QtQuick/QQuickItem>
 
 #include "abstractvideostream.h"
 #include "core_shared_export.h"
-#include "videoframe.h"
 
 namespace Vlc {
 
-class QUICKVLC_CORE_EXPORT OpenGLVideoStream : public AbstractVideoStream, protected QOpenGLFunctions
-{
-public:
-    explicit OpenGLVideoStream(QQuickItem *parent = nullptr);
-    ~OpenGLVideoStream();
+class AbstractVideoFrame;
 
-    std::shared_ptr<AbstractVideoFrame> getVideoFrame() override;
+class QUICKVLC_CORE_EXPORT D3D11VideoStream : public AbstractVideoStream
+{
+
+public:
+    explicit D3D11VideoStream(QQuickItem *parent = nullptr);
+    ~D3D11VideoStream();
 
     void windowChanged(QQuickWindow *window) override;
+    std::shared_ptr<AbstractVideoFrame> getVideoFrame() override;
+    
     void initContext() override;
 
 private:
@@ -48,28 +47,14 @@ private:
     bool setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_video_setup_device_info_t *out) override;
     void cleanup() override;
     void swap() override;
-    bool selectPlane(size_t plane, void *output) override;
     bool makeCurrent(bool isCurrent) override;
+    bool selectPlane(size_t plane, void *output) override;
     void *getProcAddress(const char *current) override;
 
-    QOpenGLContext *m_context = nullptr;
-    QOffscreenSurface *m_surface = nullptr;
     QSemaphore m_videoReady;
-    QQuickWindow *m_window = nullptr;
 
-    unsigned m_width = 0;
-    unsigned m_height = 0;
-
-    QMutex m_text_lock;
-
-    std::unique_ptr<QOpenGLFramebufferObject> m_buffers[3];
-    size_t m_idx_render = 0;
-    size_t m_idx_swap = 1;
-    size_t m_idx_display = 2;
-
-    bool m_updated = false;
-
-    std::shared_ptr<OpenGLVideoFrame> m_videoFrame;
+    struct D3D11VideoStreamPrivate;
+    std::unique_ptr<D3D11VideoStreamPrivate> m_priv;
 };
 
 }  // namespace Vlc

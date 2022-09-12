@@ -20,6 +20,7 @@
 #pragma once
 
 #include <QSize>
+#include <QtQuick/QSGTexture>
 
 #include "core_shared_export.h"
 
@@ -45,6 +46,9 @@ public:
 
     void clear();
 
+    virtual bool isFlipped() const = 0;
+
+    virtual QSGTexture *getQSGTexture() = 0;
 private:
     QSize m_size;
 };

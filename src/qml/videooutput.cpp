@@ -108,12 +108,9 @@ void VideoOutput::setCropRatio(int cropRatio)
     emit cropRatioChanged();
 }
 
-void VideoOutput::presentFrame(const std::shared_ptr<Vlc::VideoFrame> &frame)
+void VideoOutput::presentFrame()
 {
-    m_frame = frame;
-
     m_frameUpdated = true;
-
     update();
 }
 
@@ -123,25 +120,33 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 
     VideoNode *node = static_cast<VideoNode *>(oldNode);
 
-    if (!m_frame) {
-        delete node;
-
+    if (!m_source) {
+        if (node)
+            delete node;
         return nullptr;
-    }
-
-    if (!node) {
-        node = new VideoNode();
     }
 
     if (m_frameUpdated) {
         m_frameUpdated = false;
+        m_frame = m_source->getVideoFrame();
+
+        if (!m_frame) {
+            if (node)
+                delete node;
+            return nullptr;
+        }
+
+        if (!node) {
+            node = new VideoNode();
+        }
 
         node->updateFrame(m_frame);
+        auto rects = calculateFillMode(m_frame->width(), m_frame->height());
+
+        // FIXME
+        node->setRect(rects.out);
+        // node->setSourceRect(rects.source);
     }
-
-    auto rects = calculateFillMode(m_frame->width(), m_frame->height());
-
-    node->setRect(rects.out, rects.source);
 
     return node;
 }
