@@ -26,25 +26,23 @@
 #endif
 #include <core/openglvideostream.h>
 
-VideoStream::VideoStream(QQuickItem *parent)
-    : QObject(parent)
+VideoStream::VideoStream(QQuickItem *parent) : QObject(parent)
 {
 #if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11) {
         m_videostream = std::make_unique<Vlc::D3D11VideoStream>();
     } else
 #endif
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi) {
+        if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGLRhi) {
         m_videostream = std::make_unique<Vlc::OpenGLVideoStream>();
-    }
-    else
+    } else {
         assert(false);
+    }
 
-    connect(
-        m_videostream.get(), &Vlc::AbstractVideoStream::frameUpdated,
-        this, &VideoStream::frameUpdated,
+    qInfo() << "videostream: Using GraphicsAPI: " << QQuickWindow::graphicsApi();
+
+    connect(m_videostream.get(), &Vlc::AbstractVideoStream::frameUpdated, this, &VideoStream::frameUpdated,
         Qt::QueuedConnection);
-
 }
 
 VideoStream::~VideoStream()
