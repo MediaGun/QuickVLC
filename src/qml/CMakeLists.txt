@@ -77,7 +77,7 @@ target_link_libraries(${QUICKVLC_QML}
         Qt6::Core
         Qt6::Quick
         Qt6::QuickPrivate
-        PkgConfig::LIBVLC
+        LIBVLC::LIBVLC
         ${QUICKVLC_CORE}
 )
 
