@@ -91,7 +91,7 @@ target_link_libraries(${QUICKVLC_CORE}
         Qt6::Core
         Qt6::Quick
         Qt6::OpenGL
-        PkgConfig::LIBVLC
+        LIBVLC::LIBVLC
 )
 
 target_compile_definitions(${QUICKVLC_CORE} PRIVATE QUICKVLC_CORE_LIBRARY)
