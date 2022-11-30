@@ -38,25 +38,22 @@ OpenGLVideoStream::~OpenGLVideoStream()
 void OpenGLVideoStream::windowChanged(QQuickWindow *window)
 {
     m_window = window;
+
+    window->format();
+    m_surface->setFormat(window->format());
+    m_surface->create();
 }
 
 void OpenGLVideoStream::initContext()
 {
-    //    Q_ASSERT(QSGRendererInterface::isApiRhiBased(QSGRendererInterface::OpenGL));
-
     if (m_context->isValid()) {
         return;
     }
 
     auto *context = QOpenGLContext::currentContext();
-
-    m_surface->setFormat(context->format());
-    m_surface->create();
-
     m_context->setFormat(context->format());
     m_context->setShareContext(context);
     m_context->create();
-
     initializeOpenGLFunctions();
 
     m_videoReady.release();
