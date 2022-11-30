@@ -69,7 +69,8 @@ std::shared_ptr<AbstractVideoFrame> OpenGLVideoStream::getVideoFrame()
     QMutexLocker locker(&m_text_lock);
 
     if (m_updated) {
-        std::swap(m_idx_swap, m_idx_display);
+        std::swap(m_idx_swap1, m_idx_swap2);
+        std::swap(m_idx_swap2, m_idx_display);
 
         if (m_buffers[m_idx_display]) {
             m_videoFrame = std::make_shared<OpenGLVideoFrame>(m_buffers[m_idx_display].get(), m_window);
@@ -147,7 +148,7 @@ void OpenGLVideoStream::swap()
 
     m_updated = true;
 
-    std::swap(m_idx_swap, m_idx_render);
+    std::swap(m_idx_swap1, m_idx_render);
 
     emit frameUpdated();
 

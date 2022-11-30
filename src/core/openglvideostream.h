@@ -62,10 +62,11 @@ private:
 
     QMutex m_text_lock;
 
-    std::unique_ptr<QOpenGLFramebufferObject> m_buffers[3];
+    std::unique_ptr<QOpenGLFramebufferObject> m_buffers[4];
     size_t m_idx_render = 0;
-    size_t m_idx_swap = 1;
-    size_t m_idx_display = 2;
+    size_t m_idx_swap1 = 1;
+    size_t m_idx_swap2 = 2;
+    size_t m_idx_display = 3;
 
     bool m_updated = false;
 
