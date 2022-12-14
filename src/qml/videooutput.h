@@ -22,9 +22,9 @@
 #include <QPointer>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QMutex>
 
 #include "core/abstractvideoframe.h"
-#include "core/videoframe.h"
 #include "core/vlc.h"
 #include "mediasource.h"
 #include "qml_shared_export.h"
@@ -94,6 +94,6 @@ private:
     Vlc::Enum::Ratio m_aspectRatio;
     Vlc::Enum::Ratio m_cropRatio;
 
-    std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;
     bool m_frameUpdated;
+    QMutex m_frameMutex;
 };

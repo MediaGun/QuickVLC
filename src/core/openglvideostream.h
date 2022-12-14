@@ -27,7 +27,8 @@
 
 #include "abstractvideostream.h"
 #include "core_shared_export.h"
-#include "videoframe.h"
+#include "openglvideoframe.h"
+#include "videoframepool.h"
 
 namespace Vlc {
 
@@ -62,15 +63,12 @@ private:
 
     QMutex m_text_lock;
 
-    std::unique_ptr<QOpenGLFramebufferObject> m_buffers[4];
-    size_t m_idx_render = 0;
-    size_t m_idx_swap1 = 1;
-    size_t m_idx_swap2 = 2;
-    size_t m_idx_display = 3;
+    std::shared_ptr<PooledVideoFrame> m_renderingFrame;
+    std::shared_ptr<PooledVideoFrame> m_readyFrame;
+
+    std::shared_ptr<VideoFramePool> m_pool;
 
     bool m_updated = false;
-
-    std::shared_ptr<OpenGLVideoFrame> m_videoFrame;
 };
 
 }  // namespace Vlc
