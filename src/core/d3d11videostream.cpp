@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QtQuick/qsgtexture_platform.h>
 #include <QtQuick/qsgrendererinterface.h>
+#include <videoframepool.h>
 
 #include <d3d11_1.h>
 #include <dxgi1_2.h>
@@ -151,10 +152,11 @@ struct D3D11VideoStream::D3D11VideoStreamPrivate
     ComPtr<ID3D11Device> vlcD3DDevice;
     ComPtr<ID3D11DeviceContext> vlcD3DContext;
 
-    std::shared_ptr<D3DVideoFrame> renderTexture;
-    std::shared_ptr<D3DVideoFrame> swap1Texture;
-    std::shared_ptr<D3DVideoFrame> swap2Texture;
-    std::shared_ptr<D3DVideoFrame> displayTexture;
+
+    std::shared_ptr<PooledVideoFrame> m_renderingFrame;
+    std::shared_ptr<PooledVideoFrame> m_readyFrame;
+
+    std::shared_ptr<VideoFramePool> m_pool;
 
     unsigned width = 800;
     unsigned height = 0;
@@ -243,11 +245,9 @@ std::shared_ptr<AbstractVideoFrame> D3D11VideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_priv->text_lock);
     if (m_priv->updated) {
-        std::swap(m_priv->swap1Texture, m_priv->swap2Texture);
-        std::swap(m_priv->swap2Texture, m_priv->displayTexture);
         m_priv->updated = false;
     }
-    return m_priv->displayTexture;
+    return m_priv->m_readyFrame;
 }
 
 bool D3D11VideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc_video_output_cfg_t *render_cfg)
@@ -258,18 +258,19 @@ bool D3D11VideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc
         m_priv->height = cfg->height;
 
         QMutexLocker locker(&m_priv->text_lock);
-        m_priv->swap1Texture = std::make_shared<D3DVideoFrame>();
-        m_priv->swap1Texture->init(
-            m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
-        m_priv->swap2Texture = std::make_shared<D3DVideoFrame>();
-        m_priv->swap2Texture->init(
-            m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
-        m_priv->renderTexture = std::make_shared<D3DVideoFrame>();
-        m_priv->renderTexture->init(
-            m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
-        m_priv->displayTexture = std::make_shared<D3DVideoFrame>();
-        m_priv->displayTexture->init(
-            m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
+        m_priv->m_pool = std::make_shared<VideoFramePool>();
+        for (int i = 0; i < 5; i++) {
+            D3DVideoFrame *frame = new D3DVideoFrame();
+            frame->init(
+                m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
+            m_priv->m_pool->enqueue(frame);
+        }
+
+        AbstractVideoFrame* renderFrame = m_priv->m_pool->pop(0);
+        assert(renderFrame);
+        m_priv->m_renderingFrame = std::make_shared<PooledVideoFrame>(renderFrame, m_priv->m_pool);
+        m_priv->m_readyFrame.reset();
+        m_priv->updated = false;
     }
 
     render_cfg->dxgi_format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -302,10 +303,10 @@ void D3D11VideoStream::cleanup()
     m_videoReady.release();
 
     QMutexLocker locker(&m_priv->text_lock);
-    m_priv->renderTexture.reset();
-    m_priv->swap1Texture.reset();
-    m_priv->swap2Texture.reset();
-    m_priv->displayTexture.reset();
+    m_priv->m_renderingFrame.reset();
+    m_priv->m_readyFrame.reset();
+    m_priv->m_pool.reset();
+    m_priv->updated = false;
 }
 
 void D3D11VideoStream::swap()
@@ -313,7 +314,10 @@ void D3D11VideoStream::swap()
     {
         QMutexLocker locker(&m_priv->text_lock);
         m_priv->updated = true;
-        std::swap(m_priv->renderTexture, m_priv->swap1Texture);
+        m_priv->m_readyFrame = m_priv->m_renderingFrame;
+        AbstractVideoFrame* frame = m_priv->m_pool->pop(0);
+        assert(frame);
+        m_priv->m_renderingFrame = std::make_shared<PooledVideoFrame>(frame, m_priv->m_pool);
     }
     emit frameUpdated();
 }
@@ -322,7 +326,7 @@ bool D3D11VideoStream::makeCurrent(bool isCurrent)
 {
     if (isCurrent) {
         m_priv->vlcD3DContext->ClearRenderTargetView(
-            m_priv->renderTexture->m_renderTarget.Get(), BLACK_RGBA);
+            m_priv->m_renderingFrame->as<D3DVideoFrame>()->m_renderTarget.Get(), BLACK_RGBA);
     }
     return true;
 }
@@ -333,7 +337,7 @@ bool D3D11VideoStream::selectPlane(size_t plane, void *outputPtr)
         return false;
 
     ID3D11RenderTargetView **output = static_cast<ID3D11RenderTargetView **>(outputPtr);
-    *output = m_priv->renderTexture->m_renderTarget.Get();
+    *output = m_priv->m_renderingFrame->as<D3DVideoFrame>()->m_renderTarget.Get();
 
     return true;
 }

@@ -20,6 +20,9 @@
 #pragma once
 
 #include <QOpenGLFramebufferObject>
+#include <QQueue>
+#include <QMutex>
+#include <QWaitCondition>
 
 #include "abstractvideoframe.h"
 #include "core_shared_export.h"
@@ -29,9 +32,14 @@ namespace Vlc {
 class QUICKVLC_CORE_EXPORT OpenGLVideoFrame : public AbstractVideoFrame
 {
 public:
-    explicit OpenGLVideoFrame(QOpenGLFramebufferObject *fbo, QQuickWindow *window);
+    explicit OpenGLVideoFrame(int width, int height, QQuickWindow *window);
 
     ~OpenGLVideoFrame();
+
+    QOpenGLFramebufferObject &fbo()
+    {
+        return m_fbo;
+    }
 
     GLuint texture() const;
 
@@ -40,8 +48,8 @@ public:
     QSGTexture *getQSGTexture() override;
 
 private:
-    GLuint m_textureId;
-    QQuickWindow *m_window;
+    QOpenGLFramebufferObject m_fbo;
+    QQuickWindow *m_window = nullptr;
 };
 
 }  // namespace Vlc

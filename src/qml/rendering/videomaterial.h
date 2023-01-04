@@ -20,7 +20,7 @@
 
 #include <QSGMaterial>
 
-#include "core/videoframe.h"
+#include "core/abstractvideoframe.h"
 #include "rendering/videotexture.h"
 
 class VideoMaterial : public QSGMaterial

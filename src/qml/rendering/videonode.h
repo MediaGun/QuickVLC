@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include <core/videoframe.h>
+#include <core/abstractvideoframe.h>
 
 #include <QSGSimpleTextureNode>
+#include <QMutex>
 
 #include "rendering/videomaterial.h"
 
@@ -37,4 +38,5 @@ public:
 
 private:
     std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;
+    bool m_updated = false;
 };

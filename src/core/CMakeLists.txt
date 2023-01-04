@@ -30,7 +30,7 @@ set(QUICKVLC_CORE_HEADERS
     abstractvideostream.h
     vlc.h
     abstractvideoframe.h
-    videoframe.h
+    videoframepool.h
 )
 
 set(QUICKVLC_CORE_SOURCES
@@ -43,14 +43,13 @@ set(QUICKVLC_CORE_SOURCES
     abstractvideostream.cpp
     vlc.cpp
     abstractvideoframe.cpp
-    videoframe.cpp
+    videoframepool.cpp
 )
 
 IF(MSVC OR MINGW)
     list(APPEND QUICKVLC_CORE_SOURCES
         compat/asprintf.c
         compat/vasprintf.c
-        d3d11videostream.h
     )
     list(APPEND QUICKVLC_CORE_SOURCES
         d3d11videostream.cpp
@@ -61,9 +60,11 @@ IF(MSVC OR MINGW)
 ENDIF()
 list(APPEND QUICKVLC_CORE_HEADERS
     openglvideostream.h
+    openglvideoframe.h
 )
 list(APPEND QUICKVLC_CORE_SOURCES
     openglvideostream.cpp
+    openglvideoframe.cpp
 )
 
 

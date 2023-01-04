@@ -110,6 +110,7 @@ void VideoOutput::setCropRatio(int cropRatio)
 
 void VideoOutput::presentFrame()
 {
+    QMutexLocker lock(&m_frameMutex);
     m_frameUpdated = true;
     update();
 }
@@ -120,6 +121,8 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 
     VideoNode *node = static_cast<VideoNode *>(oldNode);
 
+    QMutexLocker lock(&m_frameMutex);
+
     if (!m_source) {
         if (node)
             delete node;
@@ -128,9 +131,9 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 
     if (m_frameUpdated) {
         m_frameUpdated = false;
-        m_frame = m_source->getVideoFrame();
+        std::shared_ptr<Vlc::AbstractVideoFrame>  frame = m_source->getVideoFrame();
 
-        if (!m_frame) {
+        if (!frame) {
             if (node)
                 delete node;
             return nullptr;
@@ -140,12 +143,13 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
             node = new VideoNode();
         }
 
-        node->updateFrame(m_frame);
-        auto rects = calculateFillMode(m_frame->width(), m_frame->height());
+        node->updateFrame(frame);
+        auto rects = calculateFillMode(frame->width(), frame->height());
 
         // FIXME
-        node->setRect(rects.out);
-        // node->setSourceRect(rects.source);
+        if (node->rect() != rects.out)
+            node->setRect(rects.out);
+        //node->setSourceRect(rects.out);
     }
 
     return node;
