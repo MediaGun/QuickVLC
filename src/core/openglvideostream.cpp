@@ -39,7 +39,9 @@ void OpenGLVideoStream::windowChanged(QQuickWindow *window)
 {
     m_window = window;
 
-    window->format();
+    if (!window)
+        return;
+
     m_surface->setFormat(window->format());
     m_surface->create();
 }
