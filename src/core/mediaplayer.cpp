@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "mediaplayer.h"
-
+#include <chrono>
 #include <vlc/vlc.h>
 
 #include "error.h"
@@ -26,6 +26,18 @@
 #include "media.h"
 
 namespace Vlc {
+
+using sec = std::chrono::seconds;
+using msec = std::chrono::milliseconds;
+using usec = std::chrono::microseconds;
+using std::chrono::duration_cast;
+
+
+template<typename To, typename From>
+int64_t timeAs(const From &from)
+{
+    return duration_cast<To>(from).count();
+}
 
 MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
 {
@@ -41,12 +53,20 @@ MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
 
     createCoreConnections();
 
+
+    m_timeTimer.setSingleShot(true);
+    m_timeTimer.setTimerType(Qt::PreciseTimer);
+    connect(&m_positionTimer, &QTimer::timeout, this, &MediaPlayer::updatePositionFromTimer);
+    connect(&m_timeTimer, &QTimer::timeout, this, &MediaPlayer::updateTimeFromTimer);
+
+
     Error::printErrorMsg();
 }
 
 MediaPlayer::~MediaPlayer()
 {
     removeCoreConnections();
+
 
     libvlc_media_player_release(m_vlcMediaPlayer);
 
@@ -65,11 +85,7 @@ libvlc_event_manager_t *MediaPlayer::eventManager() const
 
 int MediaPlayer::length() const
 {
-    auto length = libvlc_media_player_get_length(m_vlcMediaPlayer);
-
-    Error::printErrorMsg();
-
-    return length;
+    return timeAs<msec>(m_length);
 }
 
 libvlc_media_t *MediaPlayer::currentMediaCore()
@@ -99,11 +115,12 @@ void MediaPlayer::openOnly(Media *media)
 
 int MediaPlayer::time() const
 {
-    auto time = libvlc_media_player_get_time(m_vlcMediaPlayer);
+    return timeAs<msec>(m_time);
+}
 
-    Error::printErrorMsg();
-
-    return time;
+float MediaPlayer::rate() const
+{
+    return m_rate;
 }
 
 bool MediaPlayer::seekable() const
@@ -125,7 +142,7 @@ float MediaPlayer::position() const
         return -1;
     }
 
-    return libvlc_media_player_get_position(m_vlcMediaPlayer);
+    return m_position;
 }
 
 float MediaPlayer::sampleAspectRatio() const
@@ -289,12 +306,6 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
     case libvlc_MediaPlayerEncounteredError:
         emit core->error();
         break;
-    case libvlc_MediaPlayerTimeChanged:
-        emit core->timeChanged(event->u.media_player_time_changed.new_time);
-        break;
-    case libvlc_MediaPlayerPositionChanged:
-        emit core->positionChanged(event->u.media_player_position_changed.new_position);
-        break;
     case libvlc_MediaPlayerSeekableChanged:
         emit core->seekableChanged(event->u.media_player_seekable_changed.new_seekable);
         break;
@@ -307,9 +318,6 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
         //    case libvlc_MediaPlayerSnapshotTaken:
         //        emit core->snapshotTaken(event->u.media_player_snapshot_taken.psz_filename);
         //        break;
-    case libvlc_MediaPlayerLengthChanged:
-        emit core->lengthChanged(event->u.media_player_length_changed.new_length);
-        break;
         //    case libvlc_MediaPlayerVout:
         //        emit core->vout(event->u.media_player_vout.new_count);
         //        break;
@@ -322,6 +330,112 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
     }
 }
 
+void MediaPlayer::updateTime(usec system_now, bool forceUpdate)
+{
+    // Update time properties
+    emit timeChanged(timeAs<usec>(m_time));
+
+    if (m_playerTime.system_date_us != INT64_MAX && (forceUpdate || !m_timeTimer.isActive())) {
+        // Tell the timer to wait until the next second is reached.
+        usec next_update_date = usec(libvlc_media_player_time_point_get_next_date(
+            &m_playerTime, timeAs<usec>(system_now), timeAs<usec>(m_time), timeAs<usec>(sec(1))));
+
+        usec nextUpdateInterval = next_update_date - system_now;
+
+        if (nextUpdateInterval > usec(0)) {
+            // The timer can be triggered a little before. In that case, it's
+            // likely that we didn't reach the next next second. It's better to
+            // add a very small delay in order to be triggered after the next
+            // seconds.
+            static msec imprecisionDelay = msec(30);
+            m_timeTimer.start(duration_cast<msec>(nextUpdateInterval + imprecisionDelay));
+        }
+    }
+}
+
+bool MediaPlayer::interpolateTime(usec system_now)
+{
+    int64_t newTime;
+    if (libvlc_media_player_time_point_interpolate(&m_playerTime, timeAs<usec>(system_now), &newTime, &m_position) == 0) {
+        m_time = usec(newTime);
+        return true;
+    }
+    return false;
+}
+
+
+void MediaPlayer::onTimeUpdate(const libvlc_media_player_time_point_t *value, void *data)
+{
+    auto *core = static_cast<MediaPlayer *>(data);
+    QMetaObject::invokeMethod(core, [core, timePoint = *value]() {
+        core->m_playerTime = timePoint;
+        bool lengthOrRateChanged = false;
+
+        if (core->m_rate != timePoint.rate) {
+            core->m_rate = timePoint.rate;
+            lengthOrRateChanged = true;
+            emit core->rateChanged(core->m_rate);
+        }
+
+        if (core->m_length != usec(timePoint.length_us)) {
+            core->m_length = usec(timePoint.length_us);
+            lengthOrRateChanged = true;
+            emit core->lengthChanged(timeAs<usec>(core->m_length));
+        }
+
+        usec now = usec(libvlc_clock());
+
+        if (core->interpolateTime(now)) {
+            if (lengthOrRateChanged || !core->m_positionTimer.isActive()) {
+                emit core->positionChanged(timeAs<usec>(core->m_time));
+
+                if (core->m_playerTime.system_date_us != INT64_MAX) {
+
+                    //NOTE: upates of the position has an arbitrary scale
+                    msec interval = duration_cast<msec>(core->m_length / (core->m_playerTime.rate * 5000));
+                    if (interval < msec(15))
+                        interval = msec(15);
+                    core->m_positionTimer.start(interval);
+                }
+
+            }
+            core->updateTime(now, lengthOrRateChanged);
+        }
+    });
+}
+
+void MediaPlayer::onTimeDiscontinuity(int64_t system_date_us, void *data)
+{
+    auto *core = static_cast<MediaPlayer *>(data);
+    usec systemDate = usec(system_date_us);
+    QMetaObject::invokeMethod(core, [core, systemDate]() {
+        if (systemDate > usec(0) && core->interpolateTime(systemDate)) {
+            // The discontinuity event got a valid system date, update the time
+            // properties.
+            core->positionChanged(core->m_position);
+            core->updateTime(systemDate, false);
+        }
+
+        // And stop the timers.
+        core->m_positionTimer.stop();
+        core->m_timeTimer.stop();
+    });
+}
+
+void MediaPlayer::updatePositionFromTimer()
+{
+    usec system_now = usec(libvlc_clock());
+    if (interpolateTime(system_now))
+        emit positionChanged(m_position);
+}
+
+void MediaPlayer::updateTimeFromTimer()
+{
+    usec system_now = usec(libvlc_clock());
+    if (interpolateTime(system_now))
+        updateTime(system_now, false);
+}
+
 void MediaPlayer::createCoreConnections()
 {
     QList<libvlc_event_e> events;
@@ -329,25 +443,30 @@ void MediaPlayer::createCoreConnections()
     events << libvlc_MediaPlayerMediaChanged << libvlc_MediaPlayerNothingSpecial << libvlc_MediaPlayerOpening
            << libvlc_MediaPlayerBuffering << libvlc_MediaPlayerPlaying << libvlc_MediaPlayerPaused
            << libvlc_MediaPlayerStopped << libvlc_MediaPlayerForward << libvlc_MediaPlayerBackward
-           << libvlc_MediaPlayerEncounteredError << libvlc_MediaPlayerTimeChanged << libvlc_MediaPlayerPositionChanged
+           << libvlc_MediaPlayerEncounteredError
            << libvlc_MediaPlayerSeekableChanged << libvlc_MediaPlayerPausableChanged << libvlc_MediaPlayerSnapshotTaken
-           << libvlc_MediaPlayerLengthChanged << libvlc_MediaPlayerVout;
+           << libvlc_MediaPlayerVout;
 
     for (auto &event : events) {
         libvlc_event_attach(m_vlcEvents, event, libvlc_callback, this);
     }
+
+    libvlc_media_player_watch_time(m_vlcMediaPlayer, timeAs<usec>(msec(500)), &MediaPlayer::onTimeUpdate,
+        &MediaPlayer::onTimeDiscontinuity, this);
 }
 
 void MediaPlayer::removeCoreConnections()
 {
+    libvlc_media_player_unwatch_time(m_vlcMediaPlayer);
+
     QList<libvlc_event_e> events;
 
     events << libvlc_MediaPlayerMediaChanged << libvlc_MediaPlayerNothingSpecial << libvlc_MediaPlayerOpening
            << libvlc_MediaPlayerBuffering << libvlc_MediaPlayerPlaying << libvlc_MediaPlayerPaused
            << libvlc_MediaPlayerStopped << libvlc_MediaPlayerForward << libvlc_MediaPlayerBackward
-           << libvlc_MediaPlayerEncounteredError << libvlc_MediaPlayerTimeChanged << libvlc_MediaPlayerPositionChanged
+           << libvlc_MediaPlayerEncounteredError
            << libvlc_MediaPlayerSeekableChanged << libvlc_MediaPlayerPausableChanged << libvlc_MediaPlayerSnapshotTaken
-           << libvlc_MediaPlayerLengthChanged << libvlc_MediaPlayerVout;
+           << libvlc_MediaPlayerVout;
 
     for (auto &event : events) {
         libvlc_event_detach(m_vlcEvents, event, libvlc_callback, this);

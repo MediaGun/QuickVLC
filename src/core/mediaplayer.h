@@ -20,14 +20,17 @@
 #pragma once
 
 #include <QObject>
+#include <QTimer>
 
 #include "core_shared_export.h"
 #include "vlc.h"
+#include <vlc/vlc.h>
 
 struct libvlc_event_t;
 struct libvlc_event_manager_t;
 struct libvlc_media_t;
 struct libvlc_media_player_t;
+struct libvlc_media_player_time_point_t;
 
 namespace Vlc {
 
@@ -58,6 +61,8 @@ public:
     bool seekable() const;
 
     float position() const;
+
+    float rate() const;
 
     float sampleAspectRatio() const;
 
@@ -100,18 +105,35 @@ signals:
     void seekableChanged(bool seekable);
     void stopped();
     void timeChanged(int time);
+    void rateChanged(float rate);
     void playbackStateChanged();
 
 private:
     static void libvlc_callback(const libvlc_event_t *event, void *data);
 
+    static void onTimeUpdate(const libvlc_media_player_time_point_t *value, void *data);
+    static void onTimeDiscontinuity(int64_t system_date_us, void *data);
+
+    void updateTime(std::chrono::microseconds system_now, bool forceUpdate);
+    bool interpolateTime(std::chrono::microseconds system_now);
+    void updatePositionFromTimer();
+    void updateTimeFromTimer();
+
     void createCoreConnections();
     void removeCoreConnections();
 
-    libvlc_media_player_t *m_vlcMediaPlayer;
-    libvlc_event_manager_t *m_vlcEvents;
+    libvlc_media_player_t *m_vlcMediaPlayer = nullptr;
+    libvlc_event_manager_t *m_vlcEvents = nullptr;
 
-    Media *m_media;
+    Media *m_media = nullptr;
+
+    QTimer m_positionTimer;
+    QTimer m_timeTimer;
+    libvlc_media_player_time_point_t m_playerTime;
+    std::chrono::microseconds m_time;
+    std::chrono::microseconds m_length;
+    double m_position = 0.0;
+    float m_rate = 0.0;
 };
 
 }  // namespace Vlc
