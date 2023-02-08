@@ -162,8 +162,6 @@ struct D3D11VideoStream::D3D11VideoStreamPrivate
     unsigned height = 0;
 
     QMutex text_lock;
-
-    bool updated = false;
 };
 
 D3D11VideoStream::D3D11VideoStream(QQuickItem *parent) 
@@ -244,9 +242,6 @@ libvlc_video_engine_t D3D11VideoStream::videoEngine()
 std::shared_ptr<AbstractVideoFrame> D3D11VideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_priv->text_lock);
-    if (m_priv->updated) {
-        m_priv->updated = false;
-    }
     return m_priv->m_readyFrame;
 }
 
@@ -270,7 +265,6 @@ bool D3D11VideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc
         assert(renderFrame);
         m_priv->m_renderingFrame = std::make_shared<PooledVideoFrame>(renderFrame, m_priv->m_pool);
         m_priv->m_readyFrame.reset();
-        m_priv->updated = false;
     }
 
     render_cfg->dxgi_format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -301,19 +295,21 @@ bool D3D11VideoStream::setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc_
 void D3D11VideoStream::cleanup()
 {
     m_videoReady.release();
+    {
+        QMutexLocker locker(&m_priv->text_lock);
 
-    QMutexLocker locker(&m_priv->text_lock);
-    m_priv->m_renderingFrame.reset();
-    m_priv->m_readyFrame.reset();
-    m_priv->m_pool.reset();
-    m_priv->updated = false;
+        m_priv->m_renderingFrame.reset();
+        m_priv->m_readyFrame.reset();
+        m_priv->m_pool.reset();
+    }
+
+    emit frameUpdated();
 }
 
 void D3D11VideoStream::swap()
 {
     {
         QMutexLocker locker(&m_priv->text_lock);
-        m_priv->updated = true;
         m_priv->m_readyFrame = m_priv->m_renderingFrame;
         AbstractVideoFrame* frame = m_priv->m_pool->pop(0);
         assert(frame);

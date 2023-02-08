@@ -67,8 +67,6 @@ private:
     std::shared_ptr<PooledVideoFrame> m_readyFrame;
 
     std::shared_ptr<VideoFramePool> m_pool;
-
-    bool m_updated = false;
 };
 
 }  // namespace Vlc
