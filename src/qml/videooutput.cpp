@@ -144,14 +144,19 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
         }
 
         node->updateFrame(frame);
-        auto rects = calculateFillMode(frame->width(), frame->height());
-
-        // FIXME
-        if (node->rect() != rects.out)
-            node->setRect(rects.out);
-        node->setSourceRect(rects.source);
-
     }
+
+    if (node) {
+        QSize frameSize = node->frameSize();
+        if (frameSize.isValid()) {
+            auto rects = calculateFillMode(frameSize.width(), frameSize.height());
+
+            if (node->rect() != rects.out)
+                node->setRect(rects.out);
+            node->setSourceRect(rects.source);
+        }
+    }
+
     return node;
 }
 

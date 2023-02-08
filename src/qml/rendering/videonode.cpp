@@ -36,3 +36,10 @@ void VideoNode::updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &fram
 
     markDirty(QSGNode::DirtyMaterial);
 }
+
+QSize VideoNode::frameSize() const
+{
+    if (!m_frame)
+        return {};
+    return m_frame->size();
+}
