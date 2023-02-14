@@ -171,7 +171,7 @@ Enum::PlaybackState MediaPlayer::playbackState() const
 
 void MediaPlayer::setTime(int time)
 {
-    if (!(playbackState() == Enum::Buffering || playbackState() == Enum::Playing || playbackState() == Enum::Paused)) {
+    if (!(playbackState() == Enum::Playing || playbackState() == Enum::Paused)) {
         return;
     }
 
