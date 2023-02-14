@@ -91,21 +91,23 @@ signals:
     void backward();
     void buffering(float buffer);
     void buffering(int buffer);
-    void end();
-    void error();
     void forward();
     void lengthChanged(int length);
     void mediaChanged(libvlc_media_t *media);
-    void nothingSpecial();
-    void opening();
     void pausableChanged(bool pausable);
-    void paused();
-    void playing();
     void positionChanged(float position);
     void seekableChanged(bool seekable);
-    void stopped();
     void timeChanged(int time);
     void rateChanged(float rate);
+    
+    //player states
+    void nothingSpecial();
+    void opening();
+    void paused();
+    void playing();
+    void error();
+    void stopping();
+    void stopped();
     void playbackStateChanged();
 
 private:
@@ -126,6 +128,8 @@ private:
     libvlc_event_manager_t *m_vlcEvents = nullptr;
 
     Media *m_media = nullptr;
+
+    Enum::PlaybackState m_playerState = Enum::PlaybackState::Idle;
 
     QTimer m_positionTimer;
     QTimer m_timeTimer;

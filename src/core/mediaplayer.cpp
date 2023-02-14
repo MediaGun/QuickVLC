@@ -60,6 +60,14 @@ MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
     connect(&m_timeTimer, &QTimer::timeout, this, &MediaPlayer::updateTimeFromTimer);
 
 
+    connect(this, &MediaPlayer::nothingSpecial,         this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::opening,                this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::paused,                 this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::playing,                this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::error,                  this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::stopping,               this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::stopped,                this, &MediaPlayer::playbackStateChanged);
+
     Error::printErrorMsg();
 }
 
@@ -158,15 +166,7 @@ float MediaPlayer::sampleAspectRatio() const
 
 Enum::PlaybackState MediaPlayer::playbackState() const
 {
-    if (!libvlc_media_player_get_media(m_vlcMediaPlayer)) {
-        return Enum::Idle;
-    }
-
-    auto state = libvlc_media_player_get_state(m_vlcMediaPlayer);
-
-    Error::printErrorMsg();
-
-    return Enum::PlaybackState(state);
+    return m_playerState;
 }
 
 void MediaPlayer::setTime(int time)
@@ -276,23 +276,44 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
         emit core->mediaChanged(event->u.media_player_media_changed.new_media);
         break;
     case libvlc_MediaPlayerNothingSpecial:
-        emit core->nothingSpecial();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Idle;
+            emit core->nothingSpecial();
+        });
         break;
     case libvlc_MediaPlayerOpening:
-        emit core->opening();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Opening;
+            emit core->opening();
+        });
         break;
     case libvlc_MediaPlayerBuffering:
         emit core->buffering(event->u.media_player_buffering.new_cache);
         emit core->buffering(qRound(event->u.media_player_buffering.new_cache));
         break;
     case libvlc_MediaPlayerPlaying:
-        emit core->playing();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Playing;
+            emit core->playing();
+        });
         break;
     case libvlc_MediaPlayerPaused:
-        emit core->paused();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Paused;
+            emit core->paused();
+        });
+        break;
+    case libvlc_MediaPlayerStopping:
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Stopping;
+            emit core->paused();
+        });
         break;
     case libvlc_MediaPlayerStopped:
-        emit core->stopped();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Stopped;
+            emit core->stopped();
+        });
         break;
     case libvlc_MediaPlayerForward:
         emit core->forward();
@@ -300,11 +321,11 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
     case libvlc_MediaPlayerBackward:
         emit core->backward();
         break;
-        //    case libvlc_MediaPlayerEndReached:
-        //        emit core->end();
-        //        break;
     case libvlc_MediaPlayerEncounteredError:
-        emit core->error();
+        QMetaObject::invokeMethod(core, [core]() {
+            core->m_playerState = Enum::Error;
+            emit core->error();
+        });
         break;
     case libvlc_MediaPlayerSeekableChanged:
         emit core->seekableChanged(event->u.media_player_seekable_changed.new_seekable);
@@ -323,10 +344,6 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
         //        break;
     default:
         break;
-    }
-
-    if (event->type >= libvlc_MediaPlayerNothingSpecial && event->type <= libvlc_MediaPlayerEncounteredError) {
-        emit core->playbackStateChanged();
     }
 }
 
