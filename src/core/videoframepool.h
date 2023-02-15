@@ -58,6 +58,19 @@ public:
         return static_cast<T*>(m_frame);
     }
 
+    virtual quint16 width() const override;
+    virtual quint16 height() const override;
+
+    virtual void setWidth(quint16 width) override;
+    virtual void setHeight(quint16 height) override;
+
+    virtual QSize size() const override;
+    virtual void setSize(const QSize &size) override;
+
+    virtual bool isValid() override;
+
+    virtual void clear() override;
+
 private:
     AbstractVideoFrame* m_frame = nullptr;
     std::shared_ptr<VideoFramePool> m_pool;

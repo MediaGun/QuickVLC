@@ -43,6 +43,48 @@ QSGTexture *PooledVideoFrame::getQSGTexture()
     return m_frame->getQSGTexture();
 }
 
+quint16 PooledVideoFrame::width() const
+{
+    return m_frame->width();
+}
+
+
+quint16 PooledVideoFrame::height() const
+{
+    return m_frame->height();
+}
+
+void PooledVideoFrame::setWidth(quint16 width)
+{
+    m_frame->setWidth(width);
+}
+
+void PooledVideoFrame::setHeight(quint16 height)
+{
+    m_frame->setHeight(height);
+}
+
+QSize PooledVideoFrame::size() const
+{
+    return m_frame->size();
+}
+
+void PooledVideoFrame::setSize(const QSize &size)
+{
+    m_frame->setSize(size);
+}
+
+bool PooledVideoFrame::isValid()
+{
+    return m_frame->isValid();
+}
+
+void PooledVideoFrame::clear()
+{
+    m_frame->clear();
+}
+
+
 
 VideoFramePool::~VideoFramePool()
 {

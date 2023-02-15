@@ -144,12 +144,17 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
         }
 
         node->updateFrame(frame);
-        auto rects = calculateFillMode(frame->width(), frame->height());
+    }
 
-        // FIXME
-        if (node->rect() != rects.out)
-            node->setRect(rects.out);
-        //node->setSourceRect(rects.out);
+    if (node) {
+        QSize frameSize = node->frameSize();
+        if (frameSize.isValid()) {
+            auto rects = calculateFillMode(frameSize.width(), frameSize.height());
+
+            if (node->rect() != rects.out)
+                node->setRect(rects.out);
+            node->setSourceRect(rects.source);
+        }
     }
 
     return node;
@@ -157,7 +162,7 @@ QSGNode *VideoOutput::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *dat
 
 FrameFillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
 {
-    QRectF srcRect(0, 1.0, 1.0, -1.0);
+    QRectF srcRect(0, 0, fw, fh);
     QRectF outRect(0, 0, width(), height());
 
     if (fillMode() != Vlc::Enum::Stretch) {

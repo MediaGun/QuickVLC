@@ -20,14 +20,17 @@
 #pragma once
 
 #include <QObject>
+#include <QTimer>
 
 #include "core_shared_export.h"
 #include "vlc.h"
+#include <vlc/vlc.h>
 
 struct libvlc_event_t;
 struct libvlc_event_manager_t;
 struct libvlc_media_t;
 struct libvlc_media_player_t;
+struct libvlc_media_player_time_point_t;
 
 namespace Vlc {
 
@@ -59,6 +62,8 @@ public:
 
     float position() const;
 
+    float rate() const;
+
     float sampleAspectRatio() const;
 
     float playbackRate() const;
@@ -86,32 +91,53 @@ signals:
     void backward();
     void buffering(float buffer);
     void buffering(int buffer);
-    void end();
-    void error();
     void forward();
     void lengthChanged(int length);
     void mediaChanged(libvlc_media_t *media);
-    void nothingSpecial();
-    void opening();
     void pausableChanged(bool pausable);
-    void paused();
-    void playing();
     void positionChanged(float position);
     void seekableChanged(bool seekable);
-    void stopped();
     void timeChanged(int time);
+    void rateChanged(float rate);
+    
+    //player states
+    void nothingSpecial();
+    void opening();
+    void paused();
+    void playing();
+    void error();
+    void stopping();
+    void stopped();
     void playbackStateChanged();
 
 private:
     static void libvlc_callback(const libvlc_event_t *event, void *data);
 
+    static void onTimeUpdate(const libvlc_media_player_time_point_t *value, void *data);
+    static void onTimeDiscontinuity(int64_t system_date_us, void *data);
+
+    void updateTime(std::chrono::microseconds system_now, bool forceUpdate);
+    bool interpolateTime(std::chrono::microseconds system_now);
+    void updatePositionFromTimer();
+    void updateTimeFromTimer();
+
     void createCoreConnections();
     void removeCoreConnections();
 
-    libvlc_media_player_t *m_vlcMediaPlayer;
-    libvlc_event_manager_t *m_vlcEvents;
+    libvlc_media_player_t *m_vlcMediaPlayer = nullptr;
+    libvlc_event_manager_t *m_vlcEvents = nullptr;
 
-    Media *m_media;
+    Media *m_media = nullptr;
+
+    Enum::PlaybackState m_playerState = Enum::PlaybackState::Idle;
+
+    QTimer m_positionTimer;
+    QTimer m_timeTimer;
+    libvlc_media_player_time_point_t m_playerTime;
+    std::chrono::microseconds m_time;
+    std::chrono::microseconds m_length;
+    double m_position = 0.0;
+    float m_rate = 0.0;
 };
 
 }  // namespace Vlc

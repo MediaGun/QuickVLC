@@ -33,18 +33,18 @@ public:
 
     virtual ~AbstractVideoFrame() = 0;
 
-    quint16 width() const;
-    quint16 height() const;
+    virtual quint16 width() const;
+    virtual quint16 height() const;
 
-    void setWidth(quint16 width);
-    void setHeight(quint16 height);
+    virtual void setWidth(quint16 width);
+    virtual void setHeight(quint16 height);
 
-    QSize size() const;
-    void setSize(const QSize &size);
+    virtual QSize size() const;
+    virtual void setSize(const QSize &size);
 
-    bool isValid();
+    virtual bool isValid();
 
-    void clear();
+    virtual void clear();
 
     virtual bool isFlipped() const = 0;
 

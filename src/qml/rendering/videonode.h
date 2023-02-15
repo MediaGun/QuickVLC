@@ -35,6 +35,7 @@ public:
     VideoNode();
 
     void updateFrame(const std::shared_ptr<Vlc::AbstractVideoFrame> &frame);
+    QSize frameSize() const;
 
 private:
     std::shared_ptr<Vlc::AbstractVideoFrame> m_frame;

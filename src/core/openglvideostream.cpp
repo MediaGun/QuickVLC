@@ -39,7 +39,9 @@ void OpenGLVideoStream::windowChanged(QQuickWindow *window)
 {
     m_window = window;
 
-    window->format();
+    if (!window)
+        return;
+
     m_surface->setFormat(window->format());
     m_surface->create();
 }
@@ -67,11 +69,6 @@ libvlc_video_engine_t OpenGLVideoStream::videoEngine()
 std::shared_ptr<AbstractVideoFrame> OpenGLVideoStream::getVideoFrame()
 {
     QMutexLocker locker(&m_text_lock);
-
-    if (m_updated) {
-        m_updated = false;
-    }
-
     return m_readyFrame;
 }
 
@@ -124,25 +121,24 @@ void OpenGLVideoStream::cleanup()
 {
     m_videoReady.release();
 
-    QMutexLocker locker(&m_text_lock);
+    {
+        QMutexLocker locker(&m_text_lock);
 
-    if (m_width == 0 && m_height == 0) {
-        return;
+        m_renderingFrame.reset();
+        m_readyFrame.reset();
+        m_pool.reset();
     }
-
-    m_renderingFrame.reset();
-    m_readyFrame.reset();
-    m_pool.reset();
+    emit frameUpdated();
 }
 
 void OpenGLVideoStream::swap()
 {
-    QMutexLocker locker(&m_text_lock);
+    {
+        QMutexLocker locker(&m_text_lock);
 
-    m_updated = true;
-
-    m_renderingFrame->as<OpenGLVideoFrame>()->fbo().release();
-    m_readyFrame = m_renderingFrame;
+        m_renderingFrame->as<OpenGLVideoFrame>()->fbo().release();
+        m_readyFrame = m_renderingFrame;
+    }
     emit frameUpdated();
 
     AbstractVideoFrame* frame = m_pool->pop(0);
