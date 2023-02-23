@@ -105,7 +105,7 @@ bool OpenGLVideoStream::setup(const libvlc_video_setup_device_cfg_t *cfg, libvlc
     Q_UNUSED(out)
 
     if (!QOpenGLContext::supportsThreadedOpenGL()) {
-        return false;
+        //return false;
     }
 
     /* Wait for rendering view to be ready. */
