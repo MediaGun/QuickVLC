@@ -137,6 +137,7 @@ void OpenGLVideoStream::cleanup()
 
 void OpenGLVideoStream::swap()
 {
+    m_context->functions()->glFinish();
     {
         QMutexLocker locker(&m_text_lock);
 
