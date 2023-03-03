@@ -84,7 +84,10 @@ void PooledVideoFrame::clear()
     m_frame->clear();
 }
 
-
+VideoFramePool::VideoFramePool(int reserved)
+    : m_reserved(reserved)
+{
+}
 
 VideoFramePool::~VideoFramePool()
 {
@@ -99,7 +102,7 @@ AbstractVideoFrame* VideoFramePool::pop(unsigned long timeoutMS)
 {
     QMutexLocker lock(&m_lock);
 
-    while (m_queue.empty())
+    while (m_queue.length() <= m_reserved)
     {
         bool signaled = m_cond.wait(&m_lock, timeoutMS);
         if (!signaled)
@@ -115,7 +118,8 @@ void VideoFramePool::enqueue(AbstractVideoFrame *videoFrame)
 {
     QMutexLocker lock(&m_lock);
     m_queue.push_back(videoFrame);
-    m_cond.notify_one();
+    if (m_queue.length() >= m_reserved)
+        m_cond.notify_one();
 }
 
 }  // namespace Vlc
