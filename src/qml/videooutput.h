@@ -88,11 +88,11 @@ protected:
 private:
     FrameFillRect calculateFillMode(quint16 fw, quint16 fh);
 
-    QPointer<MediaSource> m_source;
-
-    Vlc::Enum::FillMode m_fillMode;
-    Vlc::Enum::Ratio m_aspectRatio;
-    Vlc::Enum::Ratio m_cropRatio;
+    QPointer<MediaSource> m_source = nullptr;
+     
+    Vlc::Enum::FillMode m_fillMode = Vlc::Enum::PreserveAspectFit;
+    Vlc::Enum::Ratio m_aspectRatio = Vlc::Enum::Ratio::Original;
+    Vlc::Enum::Ratio m_cropRatio = Vlc::Enum::Ratio::Original;
 
     bool m_frameUpdated;
     QMutex m_frameMutex;
