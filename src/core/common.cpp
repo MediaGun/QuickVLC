@@ -46,6 +46,9 @@ QStringList args()
                  << "--drop-late-frames";
     }
 
+    argsList.append("-vvvv");
+    argsList.append("--dec-dev=none");
+
     return argsList;
 }
 
