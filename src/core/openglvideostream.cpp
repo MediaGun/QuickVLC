@@ -23,6 +23,9 @@
 
 namespace Vlc {
 
+static const int POOL_SIZE = 7;
+static const int INFLIGHT_RESERVED = 3;
+
 OpenGLVideoStream::OpenGLVideoStream(QQuickItem *parent)
     : AbstractVideoStream { parent }
 {
@@ -76,8 +79,9 @@ bool OpenGLVideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvl
 {
     {
         QMutexLocker locker(&m_text_lock);
-        m_pool = std::make_shared<VideoFramePool>();
-        for (int i = 0; i < 5; i++)
+
+        m_pool = std::make_shared<VideoFramePool>(INFLIGHT_RESERVED);
+        for (int i = 0; i < POOL_SIZE; i++)
             m_pool->enqueue(new OpenGLVideoFrame(cfg->width, cfg->height, m_window));
         AbstractVideoFrame* frame = m_pool->pop(0);
         assert(frame);
@@ -133,6 +137,7 @@ void OpenGLVideoStream::cleanup()
 
 void OpenGLVideoStream::swap()
 {
+    m_context->functions()->glFinish();
     {
         QMutexLocker locker(&m_text_lock);
 

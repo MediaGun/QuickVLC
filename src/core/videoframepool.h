@@ -31,6 +31,7 @@ namespace Vlc {
 class QUICKVLC_CORE_EXPORT VideoFramePool
 {
 public:
+    VideoFramePool(int reserved);
     ~VideoFramePool();
 
     AbstractVideoFrame* pop(unsigned long timeoutMS);
@@ -39,6 +40,7 @@ public:
     QMutex m_lock;
     QWaitCondition m_cond; 
     QQueue<AbstractVideoFrame*> m_queue;
+    int m_reserved = 0;
 };
 
 class QUICKVLC_CORE_EXPORT PooledVideoFrame : public AbstractVideoFrame

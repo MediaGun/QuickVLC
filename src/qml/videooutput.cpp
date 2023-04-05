@@ -20,7 +20,7 @@
 
 #include "rendering/videonode.h"
 
-VideoOutput::VideoOutput() : m_source { nullptr }, m_fillMode { Vlc::Enum::PreserveAspectFit }, m_frameUpdated { false }
+VideoOutput::VideoOutput()
 {
     setFlag(QQuickItem::ItemHasContents, true);
 }
@@ -169,6 +169,7 @@ FrameFillRect VideoOutput::calculateFillMode(quint16 fw, quint16 fh)
         qreal frameAspectTmp = qreal(fw) / fh;
         QSizeF aspectRatioSize = Vlc::Enum::ratioSize(m_aspectRatio);
 
+        //FIXME: A/R and crop code is broken
         if (aspectRatioSize.width() != 0 && aspectRatioSize.height() != 0) {
             frameAspectTmp = aspectRatioSize.width() / aspectRatioSize.height();
         }

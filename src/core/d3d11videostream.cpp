@@ -32,6 +32,9 @@ using namespace Microsoft::WRL;
 
 namespace Vlc {
 
+static const int POOL_SIZE = 7;
+static const int INFLIGHT_RESERVED = 3;
+
 class D3DVideoFrame : public AbstractVideoFrame
 {
 public:
@@ -253,8 +256,8 @@ bool D3D11VideoStream::updateOutput(const libvlc_video_render_cfg_t *cfg, libvlc
         m_priv->height = cfg->height;
 
         QMutexLocker locker(&m_priv->text_lock);
-        m_priv->m_pool = std::make_shared<VideoFramePool>();
-        for (int i = 0; i < 5; i++) {
+        m_priv->m_pool = std::make_shared<VideoFramePool>(INFLIGHT_RESERVED);
+        for (int i = 0; i < POOL_SIZE; i++) {
             D3DVideoFrame *frame = new D3DVideoFrame();
             frame->init(
                 m_priv->window, m_priv->width, m_priv->height, m_priv->qtD3DDevice, m_priv->vlcD3DDevice);
