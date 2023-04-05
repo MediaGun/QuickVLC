@@ -19,12 +19,13 @@
 
 #pragma once
 
+#include <vlc/vlc.h>
+
 #include <QObject>
 #include <QTimer>
 
 #include "core_shared_export.h"
 #include "vlc.h"
-#include <vlc/vlc.h>
 
 struct libvlc_event_t;
 struct libvlc_event_manager_t;
@@ -70,6 +71,8 @@ public:
 
     Enum::PlaybackState playbackState() const;
 
+    QSize resolution() const;
+
 public slots:
     void setTime(int time);
 
@@ -99,8 +102,8 @@ signals:
     void seekableChanged(bool seekable);
     void timeChanged(int time);
     void rateChanged(float rate);
-    
-    //player states
+
+    // player states
     void nothingSpecial();
     void opening();
     void paused();
