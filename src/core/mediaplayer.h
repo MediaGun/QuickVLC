@@ -22,6 +22,7 @@
 #include <vlc/vlc.h>
 
 #include <QObject>
+#include <QTimer>
 
 #include "core_shared_export.h"
 #include "vlc.h"
@@ -30,6 +31,7 @@ struct libvlc_event_t;
 struct libvlc_event_manager_t;
 struct libvlc_media_t;
 struct libvlc_media_player_t;
+struct libvlc_instance_t;
 
 namespace Vlc {
 
@@ -69,7 +71,7 @@ public:
 
     Enum::PlaybackState playbackState() const;
 
-    QSize resolution() const;
+    QSize videoResolution() const;
 
 public slots:
     void setTime(int time);
@@ -100,6 +102,7 @@ signals:
     void seekableChanged(bool seekable);
     void timeChanged(int time);
     void rateChanged(float rate);
+    void videoResolutionChanged(QSize resolution);
 
     // player states
     void nothingSpecial();
@@ -116,18 +119,23 @@ private:
 
     void createCoreConnections();
     void removeCoreConnections();
+    void parse();
+    void checkParseStatus();
 
     Enum::PlaybackState m_playerState;
 
     libvlc_media_player_t *m_vlcMediaPlayer;
     libvlc_event_manager_t *m_vlcEvents;
-    
+    libvlc_instance_t *m_vlcInstance;
+
     qint64 m_time = 0;
     qint64 m_length = 0;
     double m_position = 0.0f;
     double m_rate = 1.0f;
+    QSize m_videoResolution;
 
     Media *m_media;
+    QTimer m_parseTimer;
 };
 
 }  // namespace Vlc

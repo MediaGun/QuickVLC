@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * This file is part of QuickVLC - Qt and libvlc connection library.
  * Copyright (C) 2016 Tadej Novak <tadej@tano.si>,
  *               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
@@ -29,8 +29,12 @@ namespace Vlc {
 
 MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
 {
+    m_vlcInstance = instance->core();
     m_vlcMediaPlayer = libvlc_media_player_new(instance->core());
     m_vlcEvents = libvlc_media_player_event_manager(m_vlcMediaPlayer);
+
+    m_parseTimer.setInterval(10);
+    connect(&m_parseTimer, &QTimer::timeout, this, &MediaPlayer::checkParseStatus);
 
     libvlc_video_set_key_input(m_vlcMediaPlayer, false);
     libvlc_video_set_mouse_input(m_vlcMediaPlayer, false);
@@ -41,13 +45,13 @@ MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
 
     createCoreConnections();
 
-    connect(this, &MediaPlayer::nothingSpecial,         this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::opening,                this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::paused,                 this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::playing,                this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::error,                  this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::stopping,               this, &MediaPlayer::playbackStateChanged);
-    connect(this, &MediaPlayer::stopped,                this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::nothingSpecial, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::opening, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::paused, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::playing, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::error, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::stopping, this, &MediaPlayer::playbackStateChanged);
+    connect(this, &MediaPlayer::stopped, this, &MediaPlayer::playbackStateChanged);
 
     Error::printErrorMsg();
 }
@@ -97,6 +101,7 @@ void MediaPlayer::openOnly(Media *media)
     m_media = media;
 
     libvlc_media_player_set_media(m_vlcMediaPlayer, media->core());
+    parse();
 
     Error::printErrorMsg();
 }
@@ -135,6 +140,15 @@ float MediaPlayer::rate() const
     }
 
     return m_rate;
+}
+
+QSize MediaPlayer::videoResolution() const
+{
+    if (!m_vlcMediaPlayer) {
+        return QSize();
+    }
+
+    return m_videoResolution;
 }
 
 float MediaPlayer::sampleAspectRatio() const
@@ -251,6 +265,40 @@ void MediaPlayer::stop()
     Error::printErrorMsg();
 }
 
+void MediaPlayer::parse()
+{
+    libvlc_media_parse_request(m_vlcInstance, currentMediaCore(), libvlc_media_parse_local, -1);
+    m_parseTimer.start();
+}
+
+void MediaPlayer::checkParseStatus()
+{
+    libvlc_media_parsed_status_t status = libvlc_media_get_parsed_status(currentMediaCore());
+    switch (status) {
+    case libvlc_media_parsed_status_done: {
+        libvlc_media_tracklist_t *tracklist = libvlc_media_get_tracklist(currentMediaCore(), libvlc_track_video);
+        if (libvlc_media_tracklist_count(tracklist) > 0) {
+            const libvlc_media_track_t *p_track = libvlc_media_tracklist_at(tracklist, 0);
+            QSize resolution = QSize(p_track->video->i_width, p_track->video->i_height);
+            if (resolution.isValid()) {
+                m_parseTimer.stop();
+                m_videoResolution = resolution;
+                emit videoResolutionChanged(m_videoResolution);
+            }
+        }
+        break;
+    }
+    case libvlc_media_parsed_status_skipped:
+    case libvlc_media_parsed_status_failed:
+    case libvlc_media_parsed_status_timeout:
+        m_videoResolution = QSize();
+        emit videoResolutionChanged(m_videoResolution);
+        break;
+    default:
+        break;
+    }
+}
+
 void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
 {
     auto *core = static_cast<MediaPlayer *>(data);
@@ -275,12 +323,13 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
         emit core->buffering(event->u.media_player_buffering.new_cache);
         emit core->buffering(qRound(event->u.media_player_buffering.new_cache));
         break;
-    case libvlc_MediaPlayerPlaying:
+    case libvlc_MediaPlayerPlaying: {
         QMetaObject::invokeMethod(core, [core]() {
             core->m_playerState = Enum::Playing;
             emit core->playing();
         });
         break;
+    }
     case libvlc_MediaPlayerPaused:
         QMetaObject::invokeMethod(core, [core]() {
             core->m_playerState = Enum::Paused;
@@ -325,12 +374,13 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
             emit core->timeChanged(core->m_time);
         });
         break;
-    case libvlc_MediaPlayerPositionChanged:
+    case libvlc_MediaPlayerPositionChanged: {
         QMetaObject::invokeMethod(core, [core, new_position = event->u.media_player_position_changed.new_position]() {
             core->m_position = new_position;
             emit core->positionChanged(core->m_position);
         });
         break;
+    }
     case libvlc_MediaPlayerSeekableChanged:
         emit core->seekableChanged(event->u.media_player_seekable_changed.new_seekable);
         break;
