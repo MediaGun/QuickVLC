@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
  * This file is part of QuickVLC - Qt and libvlc connection library.
  * Copyright (C) 2016 Tadej Novak <tadej@tano.si>,
  *               2022 Alexey Avramchik (OU Bamboo group) <aa@bam-boo.eu>
@@ -101,7 +101,7 @@ void MediaPlayer::openOnly(Media *media)
     m_media = media;
 
     libvlc_media_player_set_media(m_vlcMediaPlayer, media->core());
-    parse();
+    //parse();
 
     Error::printErrorMsg();
 }
