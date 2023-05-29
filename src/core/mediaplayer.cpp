@@ -33,9 +33,6 @@ MediaPlayer::MediaPlayer(Instance *instance) : QObject { instance }
     m_vlcMediaPlayer = libvlc_media_player_new(instance->core());
     m_vlcEvents = libvlc_media_player_event_manager(m_vlcMediaPlayer);
 
-    m_parseTimer.setInterval(10);
-    connect(&m_parseTimer, &QTimer::timeout, this, &MediaPlayer::checkParseStatus);
-
     libvlc_video_set_key_input(m_vlcMediaPlayer, false);
     libvlc_video_set_mouse_input(m_vlcMediaPlayer, false);
 
@@ -101,8 +98,7 @@ void MediaPlayer::openOnly(Media *media)
     m_media = media;
 
     libvlc_media_player_set_media(m_vlcMediaPlayer, media->core());
-    //parse();
-
+    
     Error::printErrorMsg();
 }
 
@@ -267,8 +263,12 @@ void MediaPlayer::stop()
 
 void MediaPlayer::parse()
 {
-    libvlc_media_parse_request(m_vlcInstance, currentMediaCore(), libvlc_media_parse_local, -1);
-    m_parseTimer.start();
+    libvlc_event_manager_t *eventManager = libvlc_media_event_manager(currentMediaCore());
+    libvlc_event_attach(eventManager, libvlc_MediaParsedChanged, libvlc_callback, this);
+    if (libvlc_media_parse_request(m_vlcInstance, currentMediaCore(), libvlc_media_parse_local, 0) == -1){
+        m_videoResolution = QSize();
+        emit videoResolutionChanged(m_videoResolution);
+    }
 }
 
 void MediaPlayer::checkParseStatus()
@@ -281,10 +281,13 @@ void MediaPlayer::checkParseStatus()
             const libvlc_media_track_t *p_track = libvlc_media_tracklist_at(tracklist, 0);
             QSize resolution = QSize(p_track->video->i_width, p_track->video->i_height);
             if (resolution.isValid()) {
-                m_parseTimer.stop();
                 m_videoResolution = resolution;
                 emit videoResolutionChanged(m_videoResolution);
             }
+        }
+        else{
+            m_videoResolution = QSize();
+            emit videoResolutionChanged(m_videoResolution);
         }
         break;
     }
@@ -305,6 +308,7 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
 
     switch (event->type) {
     case libvlc_MediaPlayerMediaChanged:
+        core->parse();
         emit core->mediaChanged(event->u.media_player_media_changed.new_media);
         break;
     case libvlc_MediaPlayerNothingSpecial:
@@ -392,6 +396,9 @@ void MediaPlayer::libvlc_callback(const libvlc_event_t *event, void *data)
             core->m_length = new_length;
             emit core->lengthChanged(core->m_length);
         });
+        break;
+    case libvlc_MediaParsedChanged:
+        core->checkParseStatus();
         break;
     default:
         break;

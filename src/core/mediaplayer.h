@@ -22,7 +22,6 @@
 #include <vlc/vlc.h>
 
 #include <QObject>
-#include <QTimer>
 
 #include "core_shared_export.h"
 #include "vlc.h"
@@ -135,7 +134,6 @@ private:
     QSize m_videoResolution;
 
     Media *m_media;
-    QTimer m_parseTimer;
 };
 
 }  // namespace Vlc
