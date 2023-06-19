@@ -80,7 +80,7 @@ Instance::Instance(const QStringList &args, QObject *parent)
     Error::printErrorMsg();
 
     if (m_vlcInstance) {
-        //libvlc_log_set(m_vlcInstance, logCallback, this);
+        libvlc_log_set(m_vlcInstance, logCallback, this);
 
         m_status = true;
 
