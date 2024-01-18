@@ -29,8 +29,8 @@ static const int INFLIGHT_RESERVED = 3;
 OpenGLVideoStream::OpenGLVideoStream(QQuickItem *parent)
     : AbstractVideoStream { parent }
 {
-    m_context = new QOpenGLContext(parent);
-    m_surface = new QOffscreenSurface(nullptr, parent);
+    m_context = new QOpenGLContext(this);
+    m_surface = new QOffscreenSurface(nullptr, this);
 }
 
 OpenGLVideoStream::~OpenGLVideoStream()
