@@ -20,6 +20,9 @@
 
 #include <QOpenGLContext>
 #include <QQuickItem>
+#ifdef Q_OS_MACOS
+#include <dlfcn.h>
+#endif
 
 namespace Vlc {
 
@@ -168,22 +171,30 @@ bool OpenGLVideoStream::makeCurrent(bool isCurrent)
 
     return true;
 }
-
-void *OpenGLVideoStream::getProcAddress(const char *current)
+ 
+void *OpenGLVideoStream::getProcAddress(const char *name)
 {
-    auto addr = m_context->getProcAddress(current);
+  if (!m_context->isValid())
+    return nullptr;
 
 #if QT_CONFIG(xcb_glx_plugin)
     // blacklist egl lookup on GLX
     // https://dri.freedesktop.org/wiki/glXGetProcAddressNeverReturnsNULL/
     if (m_context->nativeInterface<QNativeInterface::QGLXContext>()) {
-        if (QString(current).startsWith("egl")) {
+        if (QString(name).startsWith("egl")) {
             return nullptr;
         }
     }
 #endif
 
-    return reinterpret_cast<void *>(addr);
+#ifdef Q_OS_MACOS
+    //on OSX the default (Qt) implementaiton gets optimized (-O2) in a weird way
+    //making it return 0x0, manually loading the symbols doesn't have the issue
+    static void* image = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY);
+    return (image ? dlsym(image, name) : nullptr);
+#else
+    return reinterpret_cast<void*>(m_context->getProcAddress(name));
+#endif
 }
 
 }  // namespace Vlc
