@@ -94,3 +94,4 @@ node_modules
 
 # Build directories
 build*
+!.github/worflows/build*
