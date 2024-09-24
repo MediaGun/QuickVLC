@@ -1,0 +1,144 @@
+name: Build library
+run-name: Build library by ${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - master
+      - test
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  qt_version: ${{ vars.QT_VERSION }}
+  vlc_run_id: ${{ vars.VLC_RUN_ID }}
+
+jobs:
+  build_linux:
+    name: Build for Linux
+    runs-on: [ ubuntu-24.04 ]
+
+    env:
+      build_dir: './build'
+      install_prefix: '${{ github.workspace }}/install_linux'
+      libs_dir: '${{ github.workspace }}/libs_deps'
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Get Artifacts (libvlc)
+        uses: actions/download-artifact@v4
+        with:
+          repository: MediaGun/vlc
+          name: libvlc4-linux
+          github-token: ${{ github.token }}
+          run-id: ${{ env.vlc_run_id }}
+          path: ${{ env.libs_dir }}/libvlc
+
+      - name: Install libs
+        run: |
+          sudo apt-get install ninja-build
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.qt_version }}
+          dir: ${{ github.workspace }}/qt
+          modules: 'qtshadertools'
+          tools: 'tools_ninja'
+
+      - name: Configure
+        env:
+          LIB_DIR: ${{ env.libs_dir }}/libvlc
+        run: |
+          cmake -S . -B ${{ env.build_dir }} -GNinja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}
+
+      - name: Build
+        run: cmake --build ${{ env.build_dir }}
+
+      - name: Install
+        run: cmake --install ${{ env.build_dir }}
+
+      - name: Publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickvlc-linux
+          path: ${{ env.install_prefix }}
+
+  build_windows:
+    name: Build for Windows
+    runs-on: [ windows-2019 ]
+
+    env:
+      build_dir: './build'
+      install_prefix: '${{ github.workspace }}/install_windows'
+      libs_dir: '${{ github.workspace }}/libs_deps'
+      qt_dir: ${{ github.workspace }}
+      qt_tools_dir: ${{ github.workspace }}/Qt/Tools
+      cmake_c_compiler: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\cl.exe'
+      cmake_cxx_compiler: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\cl.exe'
+      vcvars: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
+
+    steps:
+      - run: ls 'C:\Program Files (x86)\Windows Kits'
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.qt_version }}
+          dir: ${{ github.workspace }}
+          modules: 'qtshadertools'
+          tools: 'tools_ninja'
+          add-tools-to-path: true
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Get Artifacts (libvlc)
+        uses: actions/download-artifact@v4
+        with:
+          repository: MediaGun/vlc
+          name: libvlc4-windows
+          github-token: ${{ github.token }}
+          run-id: ${{ env.vlc_run_id }}
+          path: ${{ env.libs_dir }}/libvlc
+
+      - name: Configure
+        env:
+          LIB_DIR: ${{ env.libs_dir }}/libvlc/sdk
+        run: |
+          call "${{ env.vcvars }}"
+          cmake -S . -B ${{ env.build_dir }} -GNinja "-DCMAKE_CXX_COMPILER=${{ env.cmake_cxx_compiler }}" "-DCMAKE_C_COMPILER=${{ env.cmake_c_compiler }}" -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX="${{ env.install_prefix }}"
+        shell: cmd
+
+      - name: Build
+        run: |
+          call "${{ env.vcvars }}"
+          cmake --build ${{ env.build_dir }}
+        shell: cmd
+
+      - name: Install
+        run: |
+          call "${{ env.vcvars }}"
+          cmake --install ${{ env.build_dir }}
+        shell: cmd
+
+      - name: Publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickvlc-windows
+          path: ${{ env.install_prefix }}
