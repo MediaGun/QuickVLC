@@ -18,7 +18,7 @@ permissions:
 
 env:
   qt_version: 6.8.0
-  vlc_run_id: ${{ vars.VLC_RUN_ID }}
+  vlc_run_id: 11477451494
 
 jobs:
   build_linux:
@@ -143,4 +143,57 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: quickvlc-windows
+          path: ${{ env.install_prefix }}
+
+  build_macos:
+    name: Build for MacOS
+    runs-on: [ macos-13 ]
+
+    env:
+      build_dir: './build'
+      install_prefix: '${{ github.workspace }}/install_macos'
+      libs_dir: '${{ github.workspace }}/libs_deps'
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Get Artifacts (libvlc)
+        uses: actions/download-artifact@v4
+        with:
+          repository: MediaGun/vlc
+          name: libvlc4-macos-universal
+          github-token: ${{ github.token }}
+          run-id: ${{ env.vlc_run_id }}
+          path: ${{ env.libs_dir }}/libvlc
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.qt_version }}
+          dir: ${{ github.workspace }}/qt
+          modules: 'qtshadertools'
+          tools: 'tools_ninja'
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Configure
+        env:
+          LIB_DIR: ${{ env.libs_dir }}/libvlc
+        run: |
+          cmake -S . -B ${{ env.build_dir }} -GNinja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}
+
+      - name: Build
+        run: cmake --build ${{ env.build_dir }}
+
+      - name: Install
+        run: cmake --install ${{ env.build_dir }}
+
+      - name: Publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickvlc-macos
           path: ${{ env.install_prefix }}
