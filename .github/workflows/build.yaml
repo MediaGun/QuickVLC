@@ -180,6 +180,10 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Extract VLC
+        working-directory: ${{ env.libs_dir }}/libvlc
+        run: tar -xvf vlc-macos-sdk-4.0.0-universal-dev.tar.gz
+
       - name: Configure
         env:
           LIB_DIR: ${{ env.libs_dir }}/libvlc
