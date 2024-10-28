@@ -69,11 +69,14 @@ jobs:
       - name: Install
         run: cmake --install ${{ env.build_dir }}
 
+      - name: 'Tar files (to preserve symlinks)'
+        run: tar -cvf quickvlc.tar -C ${{ env.install_prefix }} .
+
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: quickvlc-linux
-          path: ${{ env.install_prefix }}
+          path: quickvlc.tar
 
   build_windows:
     name: Build for Windows
