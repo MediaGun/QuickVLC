@@ -43,7 +43,7 @@ jobs:
           name: libvlc4-linux
           github-token: ${{ github.token }}
           run-id: ${{ env.vlc_run_id }}
-          path: ${{ env.libs_dir }}/libvlc
+          path: ${{ env.libs_dir }}
 
       - name: Install libs
         run: |
@@ -56,6 +56,11 @@ jobs:
           dir: ${{ github.workspace }}/qt
           modules: 'qtshadertools'
           tools: 'tools_ninja'
+
+      - name: Extract VLC
+        working-directory: ${{ env.libs_dir }}
+        run: |
+          mkdir ${{ env.libs_dir }}/libvlc && tar -xvf vlc.tar -C ${{ env.libs_dir }}/libvlc
 
       - name: Configure
         env:
