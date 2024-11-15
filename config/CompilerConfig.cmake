@@ -68,8 +68,7 @@ if(NOT IOS AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ferror-limit=0")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ferror-limit=0")
 
-    # TODO: Enable back
-    message(WARNING "Enable MacOS additional compiler settings!")
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 
 #    set(WITH_HOMEBREW OFF CACHE BOOL "Build using Homebrew provided Qt")
 
@@ -81,5 +80,5 @@ if(NOT IOS AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 #    endif()
 
-#    set(CMAKE_OSX_ARCHITECTURES x86_64)
+
 endif()
