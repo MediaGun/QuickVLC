@@ -27,9 +27,13 @@ permissions:
 env:
   qt_version: 6.8.0
   vlc_run_id: 13025457813
+  libvlc_version: mg-2025-08-22
 
 jobs:
   build_linux:
+    # note we only build for 24.04 at the moment, library should be binary compatible
+    # with 22.04
+
     name: Build for Linux
     runs-on: [ ubuntu-22.04 ]
 
@@ -44,18 +48,22 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Get Artifacts (libvlc)
-        uses: actions/download-artifact@v4
+      - name: Get dependency (libvlc)
+        uses: robinraju/release-downloader@v1
         with:
-          repository: MediaGun/vlc
-          name: libvlc4-linux
-          github-token: ${{ github.token }}
-          run-id: ${{ env.vlc_run_id }}
-          path: ${{ env.libs_dir }}
+          repository: 'MediaGun/vlc'
+          tag: ${{ env.libvlc_version }}
+          fileName: libvlc4-linux-ubuntu2404.tar.gz
+          extract: true
+          out-file-path: 'libs_deps'
+
+      - name: Extract VLC
+        working-directory: ${{ env.libs_dir }}
+        run: |
+          mkdir -p ${{ env.libs_dir }}/libvlc && tar -xvf libvlc4-linux-ubuntu2404.tar.gz -C ${{ env.libs_dir }}/libvlc
 
       - name: Install libs
-        run: |
-          sudo apt-get install ninja-build
+        run: sudo apt-get install ninja-build
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -65,16 +73,14 @@ jobs:
           modules: 'qtshadertools'
           tools: 'tools_ninja'
 
-      - name: Extract VLC
-        working-directory: ${{ env.libs_dir }}
-        run: |
-          mkdir ${{ env.libs_dir }}/libvlc && tar -xvf vlc.tar -C ${{ env.libs_dir }}/libvlc
-
       - name: Configure
         env:
           LIB_DIR: ${{ env.libs_dir }}/libvlc
-        run: |
-          cmake -S . -B ${{ env.build_dir }} -GNinja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}
+        run: >-
+          cmake -S . -B ${{ env.build_dir }}
+          -GNinja
+          -DCMAKE_BUILD_TYPE:STRING=Release
+          -DCMAKE_INSTALL_PREFIX=${{ env.install_prefix }}
 
       - name: Build
         run: cmake --build ${{ env.build_dir }}
@@ -101,9 +107,6 @@ jobs:
       libs_dir: '${{ github.workspace }}/libs_deps'
       qt_dir: ${{ github.workspace }}
       qt_tools_dir: ${{ github.workspace }}/Qt/Tools
-      cmake_c_compiler: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe'
-      cmake_cxx_compiler: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\cl.exe'
-      vcvars: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
 
     steps:
       - run: ls 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC'
@@ -112,6 +115,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+
+      - name: Setup MSBuild (optional, for VS environment)
+        uses: microsoft/setup-msbuild@v2
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -126,40 +132,42 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Get Artifacts (libvlc)
-        uses: actions/download-artifact@v4
+      - name: Get dependency (libvlc)
+        uses: robinraju/release-downloader@v1
         with:
-          repository: MediaGun/vlc
-          name: libvlc4-windows
-          github-token: ${{ github.token }}
-          run-id: ${{ env.vlc_run_id }}
-          path: ${{ env.libs_dir }}/libvlc
+          repository: 'MediaGun/vlc'
+          tag: ${{ env.libvlc_version }}
+          fileName: 'libvlc4-windows.zip'
+          extract: true
+          out-file-path: '${{ env.libs_dir }}/libvlc'
 
       - name: Configure
         env:
           LIB_DIR: ${{ env.libs_dir }}/libvlc/sdk
-        run: |
-          call "${{ env.vcvars }}"
-          cmake -S . -B ${{ env.build_dir }} -GNinja "-DCMAKE_CXX_COMPILER=${{ env.cmake_cxx_compiler }}" "-DCMAKE_C_COMPILER=${{ env.cmake_c_compiler }}" -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX="${{ env.install_prefix }}"
+        run: >-
+          cmake -S . -B ${{ env.build_dir }}
+          -G "Visual Studio 17 2022" -T v143
+          -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX="${{ env.install_prefix }}"
         shell: cmd
 
       - name: Build
-        run: |
-          call "${{ env.vcvars }}"
-          cmake --build ${{ env.build_dir }}
+        run: >-
+          cmake --build ${{ env.build_dir }} --config Release
         shell: cmd
 
       - name: Install
-        run: |
-          call "${{ env.vcvars }}"
+        run: >-
           cmake --install ${{ env.build_dir }}
         shell: cmd
+
+      - name: Compress
+        run: Compress-Archive -Path ${{ env.install_prefix }}\* -DestinationPath libvlc4-windows.zip
 
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: quickvlc-windows
-          path: ${{ env.install_prefix }}
+          path: libvlc4-windows.zip
 
   build_macos:
     name: Build for MacOS
@@ -176,14 +184,27 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Get Artifacts (libvlc)
-        uses: actions/download-artifact@v4
+      - name: Get dependency (libvlc)
+        uses: robinraju/release-downloader@v1
         with:
-          repository: MediaGun/vlc
-          name: libvlc4-macos-universal
-          github-token: ${{ github.token }}
-          run-id: ${{ env.vlc_run_id }}
-          path: ${{ env.libs_dir }}/libvlc
+          repository: 'MediaGun/vlc'
+          tag: ${{ env.libvlc_version }}
+          fileName: 'vlc-macos-sdk-4.0.0-universal-dev.tar.gz'
+          extract: true
+          out-file-path: 'libs_deps'
+
+      - name: Untar artifacts
+        working-directory: ${{ env.libs_dir }}
+        run: |
+          echo libs_deps
+          ls libs_deps || true
+          echo current dir
+          ls
+          echo github.workspace ${{ github.workspace }}
+          ls ${{ github.workspace }} || true
+          echo env.libs_dir ${{ env.libs_dir }}
+          ls ${{ env.libs_dir }} || true
+          mkdir ${{ env.libs_dir }}/libvlc && tar -xvf ${{ github.workspace }}/libs_deps/vlc-macos-sdk-4.0.0-universal-dev.tar.gz -C ${{ env.libs_dir }}/libvlc
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -195,10 +216,6 @@ jobs:
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
-
-      - name: Extract VLC
-        working-directory: ${{ env.libs_dir }}/libvlc
-        run: tar -xvf vlc-macos-sdk-4.0.0-universal-dev.tar.gz
 
       - name: Configure
         env:
@@ -220,3 +237,34 @@ jobs:
         with:
           name: quickvlc-macos
           path: quickvlc.tar
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [ build_linux, build_windows, build_macos ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: quickvlc-linux
+          path: ./artifacts/
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: quickvlc-windows
+          path: ./artifacts/
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: quickvlc-macos
+          path: ./artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
