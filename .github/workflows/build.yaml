@@ -7,6 +7,14 @@ on:
       - master
       - test
       - qt-6.8
+    tags:
+      - 'v*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - master
+      - test
+      - qt-6.8
   workflow_dispatch:
 
 concurrency:
