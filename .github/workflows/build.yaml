@@ -27,7 +27,7 @@ permissions:
 env:
   qt_version: 6.8.0
   vlc_run_id: 13025457813
-  libvlc_version: mg-2025-11-26
+  libvlc_version: mg-2025-11-27
 
 jobs:
   build_linux:
