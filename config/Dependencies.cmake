@@ -32,6 +32,12 @@ find_package(Qt6 COMPONENTS Quick QuickTest REQUIRED)
 find_package(Qt6 COMPONENTS Test REQUIRED)
 find_package(Qt6 COMPONENTS ShaderTools REQUIRED)
 find_package(Qt6 COMPONENTS OpenGL REQUIRED)
+# The QML plugin uses private Qt Quick API (src/qml/CMakeLists.txt). Since Qt 6.9 the private
+# modules are packages of their own, and since 6.10 they have to be requested; Qt 6.8 has them in
+# the public packages.
+if(Qt6_VERSION VERSION_GREATER_EQUAL 6.9)
+    find_package(Qt6 COMPONENTS QuickPrivate REQUIRED)
+endif()
 
 find_package(LIBVLC 4.0.0 REQUIRED)
 

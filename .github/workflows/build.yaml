@@ -7,26 +7,32 @@ on:
       - master
       - test
       - qt-6.8
+      - qt-6.12
     tags:
       - 'v*'
+      - 'qt-*'
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
       - master
       - test
       - qt-6.8
+      - qt-6.12
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 env:
-  qt_version: 6.8.0
-  vlc_run_id: 13025457813
+  qt_version: 6.12.0
+  # aqtinstall 3.3.0, the latest release, can't install Qt 6.11+ on Windows ("Failed to locate XML
+  # data for Qt version"): it doesn't know the per-architecture repository folders. Its master
+  # does; pinned to a commit until a release has it.
+  aqt_source: git+https://github.com/miurahr/aqtinstall.git@5a49f2b391ae8ee1d3c0dd87f8b33c1d49a4deb7
   libvlc_version: mg-2025-11-27
 
 jobs:
@@ -35,7 +41,9 @@ jobs:
     # with 22.04
 
     name: Build for Linux
-    runs-on: [ ubuntu-22.04 ]
+    runs-on: [ ubuntu-24.04 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
@@ -54,7 +62,7 @@ jobs:
           repository: 'MediaGun/vlc'
           tag: ${{ env.libvlc_version }}
           fileName: libvlc4-linux-ubuntu2404.tar.gz
-          extract: true
+          # No "extract: true": the archive is gone after it, and the step below unpacks it itself.
           out-file-path: 'libs_deps'
 
       - name: Extract VLC
@@ -68,6 +76,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           dir: ${{ github.workspace }}/qt
           modules: 'qtshadertools'
@@ -100,6 +109,8 @@ jobs:
   build_windows:
     name: Build for Windows
     runs-on: [ windows-2022 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
@@ -122,6 +133,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           arch: 'win64_msvc2022_64'
           dir: ${{ github.workspace }}
@@ -171,7 +183,9 @@ jobs:
 
   build_macos:
     name: Build for MacOS
-    runs-on: [ macos-13 ]
+    runs-on: [ macos-26 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
@@ -190,7 +204,7 @@ jobs:
           repository: 'MediaGun/vlc'
           tag: ${{ env.libvlc_version }}
           fileName: 'vlc-macos-sdk-4.0.0-universal-dev.tar.gz'
-          extract: true
+          # No "extract: true": the archive is gone after it, and the step below unpacks it itself.
           out-file-path: 'libs_deps'
 
       - name: Untar artifacts
@@ -209,6 +223,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           dir: ${{ github.workspace }}/qt
           modules: 'qtshadertools'
@@ -238,33 +253,36 @@ jobs:
           name: quickvlc-macos
           path: quickvlc-macos.tar
 
+  # On a tag (e.g. qt-6.12.0 or v2026-11-06): a GitHub release with the three builds, named as the
+  # app's build.yaml and check-pr.yaml download them: quickvlc-linux.tar and quickvlc-macos.tar
+  # (tar keeps the symlinks), quickvlc-windows.zip.
   release:
+    name: Publish release
     if: github.ref_type == 'tag'
     needs: [ build_linux, build_windows, build_macos ]
-    runs-on: ubuntu-latest
+    runs-on: [ ubuntu-24.04 ]
+    permissions:
+      contents: write
 
     steps:
-      - name: Download linux artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: quickvlc-linux
-          path: ./artifacts/
+          pattern: quickvlc-*
+          merge-multiple: true
+          path: artifacts
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: quickvlc-windows
-          path: ./artifacts/
+      - name: List files
+        run: ls -la artifacts
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: quickvlc-macos
-          path: ./artifacts/
-
-      - name: Create GitHub Release
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: QuickVLC ${{ github.ref_name }} for Qt ${{ env.qt_version }}
+          body: |
+            QuickVLC (Core and the QML plugin), built against Qt ${{ env.qt_version }} and libVLC ${{ env.libvlc_version }} for Linux, Windows and macOS.
+          files: |
+            artifacts/quickvlc-linux.tar
+            artifacts/quickvlc-windows.zip
+            artifacts/quickvlc-macos.tar
+          fail_on_unmatched_files: true
