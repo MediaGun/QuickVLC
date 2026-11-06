@@ -28,6 +28,10 @@ permissions:
 
 env:
   qt_version: 6.12.0
+  # aqtinstall 3.3.0, the latest release, can't install Qt 6.11+ on Windows ("Failed to locate XML
+  # data for Qt version"): it doesn't know the per-architecture repository folders. Its master
+  # does; pinned to a commit until a release has it.
+  aqt_source: git+https://github.com/miurahr/aqtinstall.git@5a49f2b391ae8ee1d3c0dd87f8b33c1d49a4deb7
   libvlc_version: mg-2025-11-27
 
 jobs:
@@ -57,7 +61,7 @@ jobs:
           repository: 'MediaGun/vlc'
           tag: ${{ env.libvlc_version }}
           fileName: libvlc4-linux-ubuntu2404.tar.gz
-          extract: true
+          # No "extract: true": the archive is gone after it, and the step below unpacks it itself.
           out-file-path: 'libs_deps'
 
       - name: Extract VLC
@@ -71,6 +75,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           dir: ${{ github.workspace }}/qt
           modules: 'qtshadertools'
@@ -127,6 +132,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           arch: 'win64_msvc2022_64'
           dir: ${{ github.workspace }}
@@ -197,7 +203,7 @@ jobs:
           repository: 'MediaGun/vlc'
           tag: ${{ env.libvlc_version }}
           fileName: 'vlc-macos-sdk-4.0.0-universal-dev.tar.gz'
-          extract: true
+          # No "extract: true": the archive is gone after it, and the step below unpacks it itself.
           out-file-path: 'libs_deps'
 
       - name: Untar artifacts
@@ -216,6 +222,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: ${{ env.aqt_source }}
           version: ${{ env.qt_version }}
           dir: ${{ github.workspace }}/qt
           modules: 'qtshadertools'
