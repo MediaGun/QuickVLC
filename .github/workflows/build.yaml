@@ -10,6 +10,7 @@ on:
       - qt-6.12
     tags:
       - 'v*'
+      - 'qt-*'
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
@@ -23,7 +24,7 @@ concurrency:
   group: ${{ github.workflow }}
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 env:
@@ -252,34 +253,36 @@ jobs:
           name: quickvlc-macos
           path: quickvlc-macos.tar
 
+  # On a tag (e.g. qt-6.12.0 or v2026-11-06): a GitHub release with the three builds, named as the
+  # app's build.yaml and check-pr.yaml download them: quickvlc-linux.tar and quickvlc-macos.tar
+  # (tar keeps the symlinks), quickvlc-windows.zip.
   release:
+    name: Publish release
     if: github.ref_type == 'tag'
     needs: [ build_linux, build_windows, build_macos ]
-    runs-on: ubuntu-latest
+    runs-on: [ ubuntu-24.04 ]
+    permissions:
+      contents: write
 
     steps:
-      - name: Download linux artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: quickvlc-linux
-          path: ./artifacts/
+          pattern: quickvlc-*
+          merge-multiple: true
+          path: artifacts
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: quickvlc-windows
-          path: ./artifacts/
+      - name: List files
+        run: ls -la artifacts
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: quickvlc-macos
-          path: ./artifacts/
-
-      - name: Create GitHub Release
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           name: QuickVLC ${{ github.ref_name }} for Qt ${{ env.qt_version }}
-          files: ./artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            QuickVLC (Core and the QML plugin), built against Qt ${{ env.qt_version }} and libVLC ${{ env.libvlc_version }} for Linux, Windows and macOS.
+          files: |
+            artifacts/quickvlc-linux.tar
+            artifacts/quickvlc-windows.zip
+            artifacts/quickvlc-macos.tar
+          fail_on_unmatched_files: true
