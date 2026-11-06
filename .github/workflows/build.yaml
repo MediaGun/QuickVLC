@@ -7,6 +7,7 @@ on:
       - master
       - test
       - qt-6.8
+      - qt-6.12
     tags:
       - 'v*'
   pull_request:
@@ -15,6 +16,7 @@ on:
       - master
       - test
       - qt-6.8
+      - qt-6.12
   workflow_dispatch:
 
 concurrency:
@@ -25,8 +27,7 @@ permissions:
   packages: write
 
 env:
-  qt_version: 6.8.0
-  vlc_run_id: 13025457813
+  qt_version: 6.12.0
   libvlc_version: mg-2025-11-27
 
 jobs:
@@ -35,7 +36,9 @@ jobs:
     # with 22.04
 
     name: Build for Linux
-    runs-on: [ ubuntu-22.04 ]
+    runs-on: [ ubuntu-24.04 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
@@ -100,6 +103,8 @@ jobs:
   build_windows:
     name: Build for Windows
     runs-on: [ windows-2022 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
@@ -171,7 +176,9 @@ jobs:
 
   build_macos:
     name: Build for MacOS
-    runs-on: [ macos-13 ]
+    runs-on: [ macos-26 ]
+    # The maximum for GitHub-hosted runners.
+    timeout-minutes: 360
 
     env:
       build_dir: './build'
